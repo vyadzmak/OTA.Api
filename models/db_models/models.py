@@ -21,6 +21,7 @@ from geoalchemy2 import Geometry
 
 Base = declarative_base()
 
+import modules.db_model_tranformer_modules.db_model_transformer_module as db_tranformer
 
 # admin settings table
 class AdminSettings(Base):
@@ -31,12 +32,25 @@ class AdminSettings(Base):
     count_log_data_records_auto_clean = Column('count_log_data_records_auto_clean', Integer)
     user_agreement = Column('user_agreement', String)
 
-    def __init__(self, data_refresh_interval, count_data_take_device, count_log_data_records_auto_clean,
-                 user_agreement):
-        self.data_refresh_interval = data_refresh_interval
-        self.count_data_take_device = count_data_take_device
-        self.count_log_data_records_auto_clean = count_log_data_records_auto_clean
-        self.user_agreement = user_agreement
+    def __init__(self,*args):
+        db_tranformer.transform_constructor_params(self,args)
+        # for a in args:
+        #     p = a
+        #     for key in p:
+        #         s_key = key
+        #         s_value = p[key]
+        #         if hasattr(self, s_key):
+        #             #a.property
+        #             setattr(self, s_key, s_value)
+        # pass
+    # def __init__(self, data_refresh_interval, count_data_take_device, count_log_data_records_auto_clean,
+    #              user_agreement):
+    #     for key, value in kwargs.items():
+    #         print("The value of {} is {}".format(key, value))
+    #     self.data_refresh_interval = data_refresh_interval
+    #     self.count_data_take_device = count_data_take_device
+    #     self.count_log_data_records_auto_clean = count_log_data_records_auto_clean
+    #     self.user_agreement = user_agreement
 
 
 # admin settings table
@@ -129,6 +143,7 @@ class Clients(Base):
     def __init__(self, name, client_type_id):
         self.name = name
         self.client_type_id = client_type_id
+
 
 
 # currency catalog

@@ -2,6 +2,7 @@ from flask import Flask
 from flask_restful import Resource, Api
 from models.app_models.json_encoder_models.json_encoder import AlchemyEncoder
 from flask_cors import CORS
+import modules.resources_init_modules.resources_initializer as resources_initializer
 from flask_basicauth import BasicAuth
 #init application
 app = Flask(__name__)
@@ -27,6 +28,8 @@ def internal_error(error):
     return "500 error"
 api = Api(app)
 
+#generate routes
+resources_initializer.init_api_resources(api)
 #start application
 if __name__ == '__main__':
     #u_s.get_user_roles()
