@@ -4,7 +4,6 @@ from sqlalchemy import String
 from sqlalchemy import Boolean
 from sqlalchemy import Date
 from sqlalchemy import DateTime
-
 from sqlalchemy import Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Integer, ForeignKey, String, Column, JSON
@@ -13,15 +12,12 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
-# import models.app_models.schema_models.schema_model as schema_model
-# import models.app_models.object_models.object_model as object_model
-# import modules.json_modules.json_encoder as encoder
 import datetime
-from geoalchemy2 import Geometry
 
 Base = declarative_base()
 
 import modules.db_model_tranformer_modules.db_model_transformer_module as db_tranformer
+
 
 # admin settings table
 class AdminSettings(Base):
@@ -32,25 +28,8 @@ class AdminSettings(Base):
     count_log_data_records_auto_clean = Column('count_log_data_records_auto_clean', Integer)
     user_agreement = Column('user_agreement', String)
 
-    def __init__(self,*args):
-        db_tranformer.transform_constructor_params(self,args)
-        # for a in args:
-        #     p = a
-        #     for key in p:
-        #         s_key = key
-        #         s_value = p[key]
-        #         if hasattr(self, s_key):
-        #             #a.property
-        #             setattr(self, s_key, s_value)
-        # pass
-    # def __init__(self, data_refresh_interval, count_data_take_device, count_log_data_records_auto_clean,
-    #              user_agreement):
-    #     for key, value in kwargs.items():
-    #         print("The value of {} is {}".format(key, value))
-    #     self.data_refresh_interval = data_refresh_interval
-    #     self.count_data_take_device = count_data_take_device
-    #     self.count_log_data_records_auto_clean = count_log_data_records_auto_clean
-    #     self.user_agreement = user_agreement
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
 
 
 # admin settings table
@@ -63,15 +42,14 @@ class Attachments(Base):
     file_path = Column('file_path', String(256))
     user_creator_id = Column('user_creator_id', ForeignKey('users.id'))
     thumb_file_path = Column('thumb_file_path', String(256))
+    uid = Column('uid', String(64))
     optimized_size_file_path = Column('optimized_size_file_path', String(256))
 
-    def __init__(self, original_file_name, file_size, file_path, user_creator_id):
-        self.upload_date = datetime.datetime.now()
+    attachment_user_data = relationship('Users', backref="attachment_user_data")
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
+        self.upload_date = datetime.datetime.now(datetime.timezone.utc)
         self.uid = str(uuid.uuid4())
-        self.original_file_name = original_file_name
-        self.file_size = file_size
-        self.file_path = file_path
-        self.user_creator_id = user_creator_id
         self.thumb_file_path = None
         self.optimized_size_file_path = None
 
@@ -86,8 +64,9 @@ class BrandsCatalog(Base):
     short_description = Column('short_description', String(600))
     default_image_id = Column('default_image_id', ForeignKey('attachments.id'))
 
-    def __init__(self, name):
-        self.name = name
+    default_image_data = relationship('Attachments', backref="default_image_data")
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
 
 
 # client addresses
@@ -98,9 +77,8 @@ class ClientAddresses(Base):
     address = Column('address', String(500))
     is_default = Column('is_default', Boolean)
 
-    def __init__(self, client_id, address):
-        self.client_id = client_id
-        self.address = address
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
 
 
 # client info
@@ -114,8 +92,8 @@ class ClientInfo(Base):
     additional_info = Column('additional_info', String(1500))
     phone_number = Column('phone_number', String(32))
 
-    def __init__(self, client_id):
-        self.client_id = client_id
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
 
 
 # client types
@@ -125,9 +103,8 @@ class ClientTypes(Base):
     name = Column('name', String(64))
     title = Column('title', String(64))
 
-    def __init__(self, name, title):
-        self.name = name
-        self.title = title
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
 
 
 # clients
@@ -140,10 +117,8 @@ class Clients(Base):
     lock_state = Column('lock_state', Boolean)
     client_type_id = Column('client_type_id', ForeignKey('client_types.id'))
 
-    def __init__(self, name, client_type_id):
-        self.name = name
-        self.client_type_id = client_type_id
-
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
 
 
 # currency catalog
@@ -155,11 +130,8 @@ class CurrencyCatalog(Base):
     display_value = Column('display_value', String(100))
     is_default = Column('is_default', Boolean)
 
-    def __init__(self, system_name, name, display_value, is_default=False):
-        self.name = name
-        self.system_name = system_name
-        self.display_value = display_value
-        self.is_default = is_default
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
 
 
 # log table
@@ -169,9 +141,9 @@ class Log(Base):
     date = Column('date', DateTime)
     message = Column('message', String)
 
-    def __init__(self, message):
-        self.date = datetime.datetime.now()
-        self.message = message
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
+        self.date = datetime.datetime.now(datetime.timezone.utc)
 
 
 # order position states
@@ -181,9 +153,8 @@ class OrderPositionStates(Base):
     name = Column('name', String(64))
     title = Column('title', String(64))
 
-    def __init__(self, name, title):
-        self.name = name
-        self.title = title
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
 
 
 # order positions
@@ -200,17 +171,8 @@ class OrderPositions(Base):
     amount_per_item_discount = Column('amount_per_item_discount', Float)
     total_amount = Column('total_amount', Float)
 
-    def __init__(self, product_id, order_id, count, description, need_invoice, order_position_state_id, amount_per_item,
-                 total_amount, amount_per_item_discount):
-        self.product_id = product_id
-        self.order_id = order_id
-        self.count = count
-        self.description = description
-        self.need_invoice = need_invoice
-        self.order_position_state_id = order_position_state_id
-        self.amount_per_item = amount_per_item
-        self.total_amount = total_amount
-        self.amount_per_item_discount = amount_per_item_discount
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
 
 
 # order states
@@ -220,9 +182,8 @@ class OrderStates(Base):
     name = Column('name', String(64))
     title = Column('title', String(64))
 
-    def __init__(self, name, title):
-        self.name = name
-        self.title = title
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
 
 
 # orders
@@ -239,13 +200,9 @@ class Orders(Base):
     amount_discount = Column('amount_discount', Float)
     total_amount = Column('total_amount', Float)
 
-    def __init__(self, user_id, number, amount, amount_discount, total_amount):
-        self.user_id = user_id
-        self.creation_date = datetime.datetime.now()
-        self.number = number
-        self.amount = amount
-        self.amount_discount = amount_discount
-        self.total_amount = total_amount
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
+        self.creation_date = datetime.datetime.now(datetime.timezone.utc)
 
 
 # partners catalog
@@ -258,8 +215,8 @@ class PartnersCatalog(Base):
     short_description = Column('short_description', String(600))
     default_image_id = Column('default_image_id', ForeignKey('attachments.id'))
 
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
 
 
 # products catalog
@@ -277,11 +234,9 @@ class ProductsCatalog(Base):
 
     default_image_id = Column('default_image_id', ForeignKey('attachments.id'))
 
-    def __init__(self, name, user_creator_id, parent_category_id=-1):
-        self.name = name
-        self.user_creator_id = user_creator_id
-        self.parent_category_id = parent_category_id
-        self.creation_date = datetime.datetime.now()
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
+        self.creation_date = datetime.datetime.now(datetime.timezone.utc)
 
 
 # product comments
@@ -295,12 +250,9 @@ class ProductComments(Base):
     is_delete = Column('is_delete', Boolean)
     product_id = Column('product_id', ForeignKey('products.id'))
 
-    def __init__(self, user_id, comment_text, rate, product_id):
-        self.user_id = user_id
-        self.comment_text = comment_text
-        self.rate = rate
-        self.product_id = product_id
-        self.creation_date = datetime.datetime.now()
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
+        self.creation_date = datetime.datetime.now(datetime.timezone.utc)
 
 
 # products catalog
@@ -330,13 +282,9 @@ class Products(Base):
     product_recomendations = Column('product_recomendations', postgresql.ARRAY(Integer))
     default_image_id = Column('default_image_id', ForeignKey('attachments.id'))
 
-    def __init__(self, category_id, user_creator_id, name, amount, currency_id):
-        self.category_id = category_id
-        self.user_creator_id = user_creator_id
-        self.name = name
-        self.amount = amount
-        self.currency_id = currency_id
-        self.creation_date = datetime.datetime.now()
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
+        self.creation_date = datetime.datetime.now(datetime.timezone.utc)
 
 
 # settings
@@ -346,9 +294,8 @@ class Settings(Base):
     name = Column('name', String(250))
     value = Column('value', String(1500))
 
-    def __init__(self, name, value):
-        self.name = name
-        self.value = value
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
 
 
 # unit catalog
@@ -360,11 +307,8 @@ class UnitCatalog(Base):
     display_value = Column('display_value', String(100))
     is_default = Column('is_default', Boolean)
 
-    def __init__(self, system_name, name, display_value, is_default=False):
-        self.name = name
-        self.system_name = system_name
-        self.display_value = display_value
-        self.is_default = is_default
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
 
 
 # user cart positions
@@ -378,10 +322,8 @@ class UserCartPositions(Base):
     need_invoice = Column('need_invoice', Boolean)
     temp_cart_uid = Column('temp_cart_uid', String(300))
 
-    def __init__(self, product_id, count, temp_cart_uid):
-        self.product_id = product_id
-        self.count = count
-        self.temp_cart_uid = temp_cart_uid
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
 
 
 # user cart states
@@ -391,9 +333,8 @@ class UserCartStates(Base):
     name = Column('name', String(64))
     title = Column('title', String(64))
 
-    def __init__(self, name, title):
-        self.name = name
-        self.title = title
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
 
 
 # user carts
@@ -407,7 +348,7 @@ class UserCarts(Base):
 
     def __init__(self, user_id):
         self.user_id = user_id
-        self.creation_date = datetime.datetime.now()
+        self.creation_date = datetime.datetime.now(datetime.timezone.utc)
         self.cart_state_id = 1
 
 
@@ -420,8 +361,8 @@ class UserInfo(Base):
     email = Column('email', String(32))
     birthday = Column('birthday', Date)
 
-    def __init__(self, user_id):
-        self.user_id = user_id
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
 
 
 # user logins
@@ -435,11 +376,9 @@ class UserLogins(Base):
     registration_date = Column('registration_date', DateTime)
     last_login_date = Column('last_login_date', DateTime)
 
-    def __init__(self, user_id, login, password):
-        self.user_id = user_id
-        self.login = login
-        self.password = password
-        self.registration_date = datetime.datetime.now()
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
+        self.registration_date = datetime.datetime.now(datetime.timezone.utc)
 
 
 # user role routes
@@ -452,13 +391,8 @@ class UserRoleRoutes(Base):
     catalog_route_access = Column('catalog_route_access', Boolean)
     requests_route_access = Column('requests_route_access', Boolean)
 
-    def __init__(self, user_role_id, admin_route_access, data_settings_route_access, catalog_route_access,
-                 requests_route_access):
-        self.user_role_id = user_role_id
-        self.admin_route_access = admin_route_access
-        self.data_settings_route_access = data_settings_route_access
-        self.catalog_route_access = catalog_route_access
-        self.requests_route_access = requests_route_access
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
 
 
 # user roles
@@ -468,9 +402,8 @@ class UserRoles(Base):
     name = Column('name', String(64))
     title = Column('title', String(64))
 
-    def __init__(self, name, title):
-        self.name = name
-        self.title = title
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
 
 
 # users
@@ -482,10 +415,9 @@ class Users(Base):
     client_id = Column('client_id', ForeignKey('clients.id'))
     lock_state = Column('lock_state', Boolean)
 
-    def __init__(self, name, client_id, user_role_id):
-        self.name = name
-        self.client_id = client_id
-        self.user_role_id = user_role_id
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
+
 
 # user role routes
 class ViewSettings(Base):
@@ -504,9 +436,5 @@ class ViewSettings(Base):
     recomendation_elements = Column('recomendation_elements', postgresql.ARRAY(Integer))
     brand_elements = Column('brand_elements', postgresql.ARRAY(Integer))
 
-
-    def __init__(self, show_slider,show_badges, show_recommendations):
-        self.show_slider = show_slider
-        self.show_badges = show_badges
-        self.show_recommendations = show_recommendations
-
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)

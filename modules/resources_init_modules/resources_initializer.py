@@ -1,10 +1,15 @@
 from res.clients_resources import *
 from res.admin_settings_resources import *
-
+from res.attachments_resources import *
+from res.brands_catalog_resources import *
 #[resource_class]
 api_resources_crud =[
     AdminSettingsResource,
-    AdminSettingsListResource
+    AdminSettingsListResource,
+    AttachmentsResource,
+    AttachmentsListResource,
+    BrandsResource,
+    BrandsListResource
 
 ]
 

@@ -1,28 +1,40 @@
-from models.db_models.models import AdminSettings
+from models.db_models.models import ClientInfo
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
 import modules.db_model_tranformer_modules.db_model_transformer_module as db_transformer
 
 #PARAMS
-ENTITY_NAME = "Admin Settings"
-MODEL = AdminSettings
-ROUTE ="/adminSettings"
-END_POINT = "admin-settings"
+ENTITY_NAME = "Client Info"
+MODEL = ClientInfo
+ROUTE ="/brandsCatalog"
+END_POINT = "brands-catalog"
 
-
+#NESTED SCHEMA FIELDS
+attachment_data = {
+    'id': fields.Integer,
+    'original_file_name': fields.String,
+    'file_path': fields.String,
+    'file_size': fields.Integer,
+    'uid': fields.String,
+    'user_creator_id': fields.Integer,
+    'upload_date': fields.DateTime,
+    'thumb_file_path': fields.String,
+    'optimized_size_file_path': fields.String
+}
 #OUTPUT SCHEMA
 output_fields = {
     'id': fields.Integer,
-    'data_refresh_interval': fields.Integer,
-    'count_data_take_device': fields.Integer,
-    'count_log_data_records_auto_clean': fields.Integer,
-    'user_agreement': fields.String,
+    'name':fields.String,
+    'images': fields.List(fields.Integer),
+    'description': fields.String,
+    'short_description': fields.String,
+    'default_image_id': fields.Integer,
 }
 
 
 #API METHODS FOR SINGLE ENTITY
-class AdminSettingsResource(Resource):
+class BrandsResource(Resource):
     def __init__(self):
         self.route = ROUTE+'/<int:id>'
         self.end_point = END_POINT
@@ -63,7 +75,7 @@ class AdminSettingsResource(Resource):
             abort(400, message="Error while update "+ENTITY_NAME)
 
 #API METHODS FOR LIST ENTITIES
-class AdminSettingsListResource(Resource):
+class BrandsListResource(Resource):
     def __init__(self):
         self.route = ROUTE
         self.end_point = END_POINT+'-list'
