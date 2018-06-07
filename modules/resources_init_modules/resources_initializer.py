@@ -13,8 +13,15 @@ from res.order_positions_resources import *
 from res.order_states_resources import *
 from res.partners_catalog_resources import *
 
+from res.settings_resources import *
+from res.unit_catalog_resources import *
+from res.user_cart_states_resources import *
 
-
+from res.user_info_resources import *
+from res.user_logins_resources import *
+from res.user_route_roles_resources import *
+from res.user_roles_resources import *
+from res.view_settings_resources import *
 #[resource_class]
 api_resources_crud =[
     AdminSettingsResource,
@@ -43,8 +50,26 @@ api_resources_crud =[
     OrderStatesListResource,
 
     PartnersResource,
-    PartnersListResource
+    PartnersListResource,
 
+    SettingsResource,
+    SettingsListResource,
+
+    UnitCatalogResource,
+    UnitCatalogListResource,
+
+    UserCartStatesResource,
+    UserCartStatesListResource,
+    UserInfoResource,
+    UserInfoListResource,
+    UserLoginsResource,
+    UserLoginsListResource,
+    UserRoleRoutesResource,
+    UserRoleRoutesListResource,
+    UserRolesResource,
+    UserRolesListResource,
+    ViewSettingsResource,
+    ViewSettingsListResource
 ]
 
 def init_single_resource(api, resource, route, endpoint):
