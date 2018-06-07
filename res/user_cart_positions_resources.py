@@ -1,63 +1,36 @@
-from models.db_models.models import OrderPositions
+from models.db_models.models import UserCartPositions
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
 import modules.db_model_tranformer_modules.db_model_transformer_module as db_transformer
 
 #PARAMS
-ENTITY_NAME = "Order Positions"
-MODEL = OrderPositions
-ROUTE ="/orderPositions"
-END_POINT = "order-positions"
+ENTITY_NAME = "User Cart Positions"
+MODEL = UserCartPositions
+ROUTE ="/userCartPositions"
+END_POINT = "user-cart-positions"
 
 #NESTED SCHEMA FIELDS
-product_data_fields ={
+user_cart_position_product_data_fields={
     'id': fields.Integer,
     'name':fields.String,
     'category_id':fields.Integer,
     'product_code':fields.String,
     'amount':fields.Float,
 }
-
-order_data_fields = {
-    'id': fields.Integer,
-    'user_id':fields.Integer,
-    'creation_date':fields.DateTime,
-    'number':fields.String,
-    'executor_id': fields.Integer,
-    'processed_date': fields.DateTime,
-    'execute_date': fields.DateTime,
-    'amount': fields.Float,
-    'amount_discount': fields.Float,
-    'total_amount': fields.Float
-}
-
-order_position_states_data = {
-    'id': fields.Integer,
-    'name':fields.String,
-    'title': fields.String
-}
 #OUTPUT SCHEMA
 output_fields = {
     'id': fields.Integer,
     'product_id':fields.Integer,
-    'order_id': fields.Integer,
-    'count':fields.Float,
-    'description':fields.String,
-    'need_invoice':fields.Boolean,
-    'order_position_state_id':fields.Integer,
-    'amount_per_item':fields.Float,
-    'amount_per_item_discount':fields.Float,
-    'total_amount':fields.Float,
-
-    'product_data':fields.Nested(product_data_fields),
-    'order_data':fields.Nested(order_data_fields),
-    'order_position_states':fields.Nested(order_position_states_data)
+    'count': fields.Float,
+    'need_infoice':fields.Boolean,
+    'user_cart_id':fields.Integer,
+    'user_cart_position_product_data':fields.Nested(user_cart_position_product_data_fields)
 }
 
 
 #API METHODS FOR SINGLE ENTITY
-class OrderPositionsResource(Resource):
+class UserCartPositionsResource(Resource):
     def __init__(self):
         self.route = ROUTE+'/<int:id>'
         self.end_point = END_POINT
@@ -98,7 +71,7 @@ class OrderPositionsResource(Resource):
             abort(400, message="Error while update "+ENTITY_NAME)
 
 #API METHODS FOR LIST ENTITIES
-class OrderPositionsListResource(Resource):
+class UserCartPositionsListResource(Resource):
     def __init__(self):
         self.route = ROUTE
         self.end_point = END_POINT+'-list'

@@ -11,17 +11,24 @@ from res.log_resources import *
 from res.order_position_states_resources import *
 from res.order_positions_resources import *
 from res.order_states_resources import *
-from res.partners_catalog_resources import *
+from res.orders_resources import *
 
+from res.partners_catalog_resources import *
+from res.product_categories_resources import *
+from res.products_resources import *
 from res.settings_resources import *
 from res.unit_catalog_resources import *
 from res.user_cart_states_resources import *
+from res.user_carts_resources import *
+from res.user_cart_positions_resources import  *
 
 from res.user_info_resources import *
 from res.user_logins_resources import *
 from res.user_route_roles_resources import *
 from res.user_roles_resources import *
+from res.users_resources import *
 from res.view_settings_resources import *
+
 #[resource_class]
 api_resources_crud =[
     AdminSettingsResource,
@@ -48,9 +55,14 @@ api_resources_crud =[
     OrderPositionsListResource,
     OrderStatesResource,
     OrderStatesListResource,
-
+    OrdersResource,
+    OrdersListResource,
     PartnersResource,
     PartnersListResource,
+    ProductCategoriesResource,
+    ProductCategoriesListResource,
+    ProductsResource,
+    ProductsListResource,
 
     SettingsResource,
     SettingsListResource,
@@ -60,6 +72,10 @@ api_resources_crud =[
 
     UserCartStatesResource,
     UserCartStatesListResource,
+    UserCartsResource,
+    UserCartsListResource,
+    UserCartPositionsResource,
+    UserCartPositionsListResource,
     UserInfoResource,
     UserInfoListResource,
     UserLoginsResource,
@@ -68,6 +84,8 @@ api_resources_crud =[
     UserRoleRoutesListResource,
     UserRolesResource,
     UserRolesListResource,
+    UsersResource,
+    UsersListResource,
     ViewSettingsResource,
     ViewSettingsListResource
 ]
