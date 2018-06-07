@@ -1,4 +1,4 @@
-from models.db_models.models import BrandsCatalog,Attachments
+from models.db_models.models import PartnersCatalog,Attachments
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -6,13 +6,13 @@ import modules.db_model_tranformer_modules.db_model_transformer_module as db_tra
 import models.app_models.setting_models.setting_model as settings
 import urllib.parse
 #PARAMS
-ENTITY_NAME = "Brands Catalog"
-MODEL = BrandsCatalog
-ROUTE ="/brandsCatalog"
-END_POINT = "brands-catalog"
+ENTITY_NAME = "Partners Catalog"
+MODEL = PartnersCatalog
+ROUTE ="/partnersCatalog"
+END_POINT = "partners-catalog"
 
 #NESTED SCHEMA FIELDS
-default_image_data_brands = {
+default_image_data_partners = {
     'id': fields.Integer,
     'original_file_name': fields.String,
     'file_path': fields.String,
@@ -31,13 +31,13 @@ output_fields = {
     'description': fields.String,
     'short_description': fields.String,
     'default_image_id': fields.Integer,
-    'default_image_data_brands':fields.Nested(default_image_data_brands),
-    'images_data':fields.Nested(default_image_data_brands)
+    'default_image_data_partners':fields.Nested(default_image_data_partners),
+    'images_data':fields.Nested(default_image_data_partners)
 }
 
 
 #API METHODS FOR SINGLE ENTITY
-class BrandsResource(Resource):
+class PartnersResource(Resource):
     def __init__(self):
         self.route = ROUTE+'/<int:id>'
         self.end_point = END_POINT
@@ -121,7 +121,7 @@ class BrandsResource(Resource):
             abort(400, message="Error while update "+ENTITY_NAME)
 
 #API METHODS FOR LIST ENTITIES
-class BrandsListResource(Resource):
+class PartnersListResource(Resource):
     def __init__(self):
         self.route = ROUTE
         self.end_point = END_POINT+'-list'

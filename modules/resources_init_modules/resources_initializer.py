@@ -2,6 +2,19 @@ from res.clients_resources import *
 from res.admin_settings_resources import *
 from res.attachments_resources import *
 from res.brands_catalog_resources import *
+from res.client_adresses_resources import *
+from res.client_info_resources import *
+from res.client_types_resources import *
+from res.clients_resources import *
+from res.currency_catalog_resources import *
+from res.log_resources import *
+from res.order_position_states_resources import *
+from res.order_positions_resources import *
+from res.order_states_resources import *
+from res.partners_catalog_resources import *
+
+
+
 #[resource_class]
 api_resources_crud =[
     AdminSettingsResource,
@@ -9,7 +22,28 @@ api_resources_crud =[
     AttachmentsResource,
     AttachmentsListResource,
     BrandsResource,
-    BrandsListResource
+    BrandsListResource,
+    ClientAddressesResource,
+    ClientAddressesListResource,
+    ClientInfoResource,
+    ClientInfoListResource,
+    ClientTypesResource,
+    ClientTypesListResource,
+    ClientsResource,
+    ClientsListResource,
+    CurrencyCatalogResource,
+    CurrencyCatalogListResource,
+    LogResource,
+    LogListResource,
+    OrderPositionStatesResource,
+    OrderPositionStatesListResource,
+    OrderPositionsResource,
+    OrderPositionsListResource,
+    OrderStatesResource,
+    OrderStatesListResource,
+
+    PartnersResource,
+    PartnersListResource
 
 ]
 

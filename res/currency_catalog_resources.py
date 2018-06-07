@@ -1,41 +1,29 @@
-from models.db_models.models import ClientInfo
+from models.db_models.models import CurrencyCatalog
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
 import modules.db_model_tranformer_modules.db_model_transformer_module as db_transformer
 
 #PARAMS
-ENTITY_NAME = "Client Info"
-MODEL = ClientInfo
-ROUTE ="/clientInfo"
-END_POINT = "client-info"
+ENTITY_NAME = "Currency Catalog"
+MODEL = CurrencyCatalog
+ROUTE ="/currencyCatalog"
+END_POINT = "currency-catalog"
 
 #NESTED SCHEMA FIELDS
-attachment_data = {
-    'id': fields.Integer,
-    'original_file_name': fields.String,
-    'file_path': fields.String,
-    'file_size': fields.Integer,
-    'uid': fields.String,
-    'user_creator_id': fields.Integer,
-    'upload_date': fields.DateTime,
-    'thumb_file_path': fields.String,
-    'optimized_size_file_path': fields.String
-}
+
 #OUTPUT SCHEMA
 output_fields = {
     'id': fields.Integer,
-    'client_id':fields.Integer,
-    'logo_attachment_id': fields.Integer,
-    'email': fields.String,
-    'main_info': fields.String,
-    'additional_info': fields.String,
-    'attachment_data':fields.Nested(attachment_data)
+    'system_name':fields.String,
+    'display_value':fields.String,
+    'name':fields.String,
+    'is_default': fields.Boolean
 }
 
 
 #API METHODS FOR SINGLE ENTITY
-class ClientInfoResource(Resource):
+class CurrencyCatalogResource(Resource):
     def __init__(self):
         self.route = ROUTE+'/<int:id>'
         self.end_point = END_POINT
@@ -76,7 +64,7 @@ class ClientInfoResource(Resource):
             abort(400, message="Error while update "+ENTITY_NAME)
 
 #API METHODS FOR LIST ENTITIES
-class ClientInfoListResource(Resource):
+class CurrencyCatalogListResource(Resource):
     def __init__(self):
         self.route = ROUTE
         self.end_point = END_POINT+'-list'

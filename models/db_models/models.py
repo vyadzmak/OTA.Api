@@ -64,7 +64,7 @@ class BrandsCatalog(Base):
     short_description = Column('short_description', String(600))
     default_image_id = Column('default_image_id', ForeignKey('attachments.id'))
 
-    default_image_data = relationship('Attachments', backref="default_image_data")
+    default_image_data_brands = relationship('Attachments', backref="default_image_data_brands")
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
 
@@ -83,7 +83,7 @@ class ClientAddresses(Base):
 
 # client info
 class ClientInfo(Base):
-    __tablename__ = 'cilent_info'
+    __tablename__ = 'client_info'
     id = Column('id', Integer, primary_key=True)
     client_id = Column('client_id', ForeignKey('clients.id'))
     logo_attachment_id = Column('logo_attachment_id', ForeignKey('attachments.id'))
@@ -92,6 +92,7 @@ class ClientInfo(Base):
     additional_info = Column('additional_info', String(1500))
     phone_number = Column('phone_number', String(32))
 
+    attachment_data = relationship('Attachments', backref="attachment_data")
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
 
@@ -117,9 +118,11 @@ class Clients(Base):
     lock_state = Column('lock_state', Boolean)
     client_type_id = Column('client_type_id', ForeignKey('client_types.id'))
 
+    client_type_data = relationship('ClientTypes', backref="client_type_data")
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
-
+        self.registration_date = datetime.datetime.now(datetime.timezone.utc)
+        self.lock_state = False
 
 # currency catalog
 class CurrencyCatalog(Base):
@@ -171,6 +174,10 @@ class OrderPositions(Base):
     amount_per_item_discount = Column('amount_per_item_discount', Float)
     total_amount = Column('total_amount', Float)
 
+    # product_data = relationship('Products', backref="product_data")
+    # order_data = relationship('Orders', backref="order_data")
+    # order_position_states = relationship('OrderPositions', backref="order_position_states")
+
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
 
@@ -215,6 +222,8 @@ class PartnersCatalog(Base):
     short_description = Column('short_description', String(600))
     default_image_id = Column('default_image_id', ForeignKey('attachments.id'))
 
+    default_image_data_partners = relationship('Attachments', backref="default_image_dat_partners")
+
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
 
@@ -231,7 +240,6 @@ class ProductsCatalog(Base):
     creation_date = Column('creation_date', DateTime)
     is_lock_state = Column('is_lock', Boolean)
     parent_category_id = Column('parent_category_id', Integer)
-
     default_image_id = Column('default_image_id', ForeignKey('attachments.id'))
 
     def __init__(self, *args):
