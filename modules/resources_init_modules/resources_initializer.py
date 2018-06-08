@@ -28,7 +28,8 @@ from res.user_route_roles_resources import *
 from res.user_roles_resources import *
 from res.users_resources import *
 from res.view_settings_resources import *
-
+from res.upload_files_resources import *
+from res.attachment_original_view_resources import *
 #cross resourcse
 
 from cross_res.user_auth_resources import *
@@ -78,7 +79,8 @@ api_resources_crud =[
 
     UnitCatalogResource,
     UnitCatalogListResource,
-
+    UploadFileResource,
+    AttachmentOriginalViewResource,
     UserCartStatesResource,
     UserCartStatesListResource,
     UserCartsResource,

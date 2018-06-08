@@ -28,6 +28,12 @@ def internal_error(error):
     return "500 error"
 api = Api(app)
 
+
+@app.route('/uploads/original/folder/<path:filename>')
+def send_file(filename):
+    t=0
+    return None
+
 #generate routes
 resources_initializer.init_api_resources(api)
 #start application
