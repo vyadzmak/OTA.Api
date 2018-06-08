@@ -3,7 +3,7 @@ from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
 import modules.db_model_tranformer_modules.db_model_transformer_module as db_transformer
-
+import base64
 #PARAMS
 ENTITY_NAME = "User Logins"
 MODEL = UserLogins
@@ -82,6 +82,9 @@ class UserLoginsListResource(Resource):
     def post(self):
         try:
             json_data = request.get_json(force=True)
+            password = json_data["password"]
+            encrypted_password = str(base64.b64encode(bytes(password, "utf-8")))
+            json_data["password"]=encrypted_password
             entity = MODEL(json_data)
             session.add(entity)
             session.commit()

@@ -4,10 +4,8 @@ from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
 import modules.db_model_tranformer_modules.db_model_transformer_module as db_transformer
 from sqlalchemy import and_
-from sqlalchemy.orm import lazyload
 import base64
-from flask import jsonify
-import models.response_models.auth_models.auth_model as auth_model
+import datetime
 import modules.json_serializator_modules.json_serializator as json_serializator
 import copy
 # PARAMS
@@ -40,8 +38,7 @@ login_user_data = {
     'id': fields.Integer,
     'name': fields.String,
     'client_data': fields.Nested(login_user_client_data),
-    'user_role_data': fields.Nested(user_role_data)
-
+    'user_role_data': fields.Nested(user_role_data),
 }
 # OUTPUT SCHEMA
 output_fields = {
@@ -49,7 +46,8 @@ output_fields = {
     'login': fields.String,
     'password': fields.String,
     'user_data': fields.Nested(login_user_data),
-    'orders_count':fields.Integer
+    'orders_count':fields.Integer,
+    'last_login_date':fields.DateTime
 
 }
 
@@ -91,10 +89,19 @@ class UserAuthResource(Resource):
             if (user_login.user_data.client_data.lock_state==True):
                 abort(400, message='Ошибка авторизации. Клиент (компания) заблокирован!')
 
+            user_login.last_login_date =datetime.datetime.now(datetime.timezone.utc)
+            session.add(user_login)
+            session.commit()
             # get to additional params
+
             orders = session.query(Orders).filter(Orders.order_state_id==1).all()
-            user_login.orders_count = len(orders)
+            if (orders!=None):
+                user_login.orders_count = len(orders)
+
             return user_login
         except Exception as e:
+            if (hasattr(e,'data')):
+                if (e.data!=None and "message" in e.data):
+                    abort(400,message =e.data["message"])
             abort(400, message = "Неопознанная ошибка")
 

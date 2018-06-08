@@ -77,6 +77,8 @@ class ClientAddresses(Base):
     address = Column('address', String(500))
     is_default = Column('is_default', Boolean)
 
+    related_clients = relationship('Clients', backref="client_addresses_data")
+
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
 
@@ -93,6 +95,7 @@ class ClientInfo(Base):
     phone_number = Column('phone_number', String(32))
 
     attachment_data = relationship('Attachments', backref="attachment_data")
+    related_clients = relationship('Clients', backref="client_info_data")
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
 
