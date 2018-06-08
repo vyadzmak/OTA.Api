@@ -29,6 +29,10 @@ from res.user_roles_resources import *
 from res.users_resources import *
 from res.view_settings_resources import *
 
+#cross resourcse
+
+from cross_res.user_auth_resources import *
+
 #[resource_class]
 api_resources_crud =[
     AdminSettingsResource,
@@ -90,12 +94,23 @@ api_resources_crud =[
     ViewSettingsListResource
 ]
 
+
+#[resource_class]
+api_resources_cross =[
+    UserAuthResource
+]
 def init_single_resource(api, resource, route, endpoint):
     api.add_resource(resource, route, endpoint=endpoint)
     pass
 
 def init_api_resources(api):
-    for r in api_resources_crud:
-        ex = r()
-        init_single_resource(api, r, ex.route, ex.end_point)
+    for crud_resource in api_resources_crud:
+        ex = crud_resource()
+        init_single_resource(api, crud_resource, ex.route, ex.end_point)
+
+        pass
+
+    for cross_resource in api_resources_cross:
+        ex = cross_resource()
+        init_single_resource(api, cross_resource, ex.route, ex.end_point)
         pass

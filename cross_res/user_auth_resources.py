@@ -1,0 +1,100 @@
+from models.db_models.models import UserLogins, Orders
+from db.db import session
+from flask import Flask, jsonify, request
+from flask_restful import Resource, fields, marshal_with, abort, reqparse
+import modules.db_model_tranformer_modules.db_model_transformer_module as db_transformer
+from sqlalchemy import and_
+from sqlalchemy.orm import lazyload
+import base64
+from flask import jsonify
+import models.response_models.auth_models.auth_model as auth_model
+import modules.json_serializator_modules.json_serializator as json_serializator
+import copy
+# PARAMS
+ENTITY_NAME = "User Auth"
+ROUTE = "/userAuth"
+END_POINT = "user-auth"
+
+# NESTED SCHEMA FIELDS
+user_role_route_access_fields = {
+    'user_role_id': fields.Integer,
+    'admin_route_access': fields.Boolean,
+    'data_settings_route_access': fields.Boolean,
+    'catalog_route_access': fields.Boolean,
+    'requests_route_access': fields.Boolean
+}
+user_role_data = {
+    'id': fields.Integer,
+    'name': fields.String,
+    'title': fields.String,
+    'user_role_route_access': fields.Nested(user_role_route_access_fields)
+}
+
+login_user_client_data = {
+    'id': fields.Integer,
+    'name': fields.String,
+    'registration_number': fields.String
+}
+
+login_user_data = {
+    'id': fields.Integer,
+    'name': fields.String,
+    'client_data': fields.Nested(login_user_client_data),
+    'user_role_data': fields.Nested(user_role_data)
+
+}
+# OUTPUT SCHEMA
+output_fields = {
+    'id': fields.Integer,
+    'login': fields.String,
+    'password': fields.String,
+    'user_data': fields.Nested(login_user_data),
+    'orders_count':fields.Integer
+
+}
+
+
+# API METHODS FOR SINGLE ENTITY
+class UserAuthResource(Resource):
+    def __init__(self):
+        self.route = ROUTE
+        self.end_point = END_POINT
+        pass
+
+    @marshal_with(output_fields)
+    def get(self):
+        try:
+            parser = reqparse.RequestParser()
+            parser.add_argument('login')
+            parser.add_argument('password')
+            args = parser.parse_args()
+            if (len(args) == 0):
+                abort(400, message='Arguments not found')
+            login = args['login']
+            password = args['password']
+
+            encrypted_password = str(base64.b64encode(bytes(password, "utf-8")))
+
+
+            # check login
+            user_login = session.query(UserLogins).filter(and_(
+                UserLogins.login == login,
+                UserLogins.password == encrypted_password)) \
+                .first()
+
+            if not user_login:
+                abort(400, message='Ошибка авторизации. Пользователь с такими данными не найден!')
+
+            if (user_login.user_data.lock_state==True):
+                abort(400, message='Ошибка авторизации. Пользователь заблокирован!')
+
+            if (user_login.user_data.client_data.lock_state==True):
+                abort(400, message='Ошибка авторизации. Клиент (компания) заблокирован!')
+
+            # get to additional params
+            orders = session.query(Orders).filter(Orders.order_state_id==1).all()
+            user_login.orders_count = len(orders)
+            return user_login
+        except Exception as e:
+            abort(400, message = "Неопознанная ошибка")
+

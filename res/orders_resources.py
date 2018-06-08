@@ -23,7 +23,8 @@ output_fields = {
     'execute_date': fields.DateTime,
     'amount': fields.Float,
     'amount_discount': fields.Float,
-    'total_amount': fields.Float
+    'total_amount': fields.Float,
+    'order_state_id':fields.Integer
 
 }
 

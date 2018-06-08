@@ -119,6 +119,7 @@ class Clients(Base):
     client_type_id = Column('client_type_id', ForeignKey('client_types.id'))
 
     client_type_data = relationship('ClientTypes', backref="client_type_data")
+    related_users = relationship('Users', backref="client_data")
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
         self.registration_date = datetime.datetime.now(datetime.timezone.utc)
@@ -206,11 +207,12 @@ class Orders(Base):
     amount = Column('amount', Float)
     amount_discount = Column('amount_discount', Float)
     total_amount = Column('total_amount', Float)
-
+    order_state_id = Column('order_state_id', ForeignKey('order_states.id'))
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
         self.creation_date = datetime.datetime.now(datetime.timezone.utc)
         self.number = ''
+        self.order_state_id = 1
 
 
 
@@ -417,6 +419,7 @@ class UserRoleRoutes(Base):
     catalog_route_access = Column('catalog_route_access', Boolean)
     requests_route_access = Column('requests_route_access', Boolean)
 
+    related_user_roles = relationship('UserRoles', backref="user_role_route_access")
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
 
@@ -428,6 +431,7 @@ class UserRoles(Base):
     name = Column('name', String(64))
     title = Column('title', String(64))
 
+    related_users = relationship('Users', backref="user_role_data")
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
 
@@ -441,6 +445,7 @@ class Users(Base):
     client_id = Column('client_id', ForeignKey('clients.id'))
     lock_state = Column('lock_state', Boolean)
 
+    related_user_login = relationship('UserLogins', backref="user_data")
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
 
