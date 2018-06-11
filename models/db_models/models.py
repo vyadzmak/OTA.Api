@@ -266,6 +266,8 @@ class ProductComments(Base):
     is_delete = Column('is_delete', Boolean)
     product_id = Column('product_id', ForeignKey('products.id'))
 
+    comment_user_data = relationship('Users', backref="comment_user_data")
+    comment_product_data = relationship('Products', backref="comment_product_data")
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
         self.creation_date = datetime.datetime.now(datetime.timezone.utc)

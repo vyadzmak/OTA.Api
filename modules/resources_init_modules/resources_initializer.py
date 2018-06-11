@@ -32,8 +32,10 @@ from res.upload_files_resources import *
 from res.attachment_original_view_resources import *
 from res.attachment_thumbs_view_resources import *
 from res.attachment_optimized_view_resources import *
-#cross resourcse
+from res.product_comments_resources import *
 
+
+#cross resourcse
 from cross_res.user_auth_resources import *
 from cross_res.route_admin_general_resources import *
 from cross_res.route_admin_users_resources import *
@@ -43,6 +45,7 @@ from cross_res.route_admin_settings_resources import *
 from cross_res.attacments_info_resources import *
 from cross_res.client_info_by_client_resources import *
 from cross_res.client_addresses_by_client_resources import *
+from cross_res.products_categories_by_product_category_resources import *
 #[resource_class]
 api_resources_crud =[
     AdminSettingsResource,
@@ -75,6 +78,9 @@ api_resources_crud =[
     PartnersListResource,
     ProductCategoriesResource,
     ProductCategoriesListResource,
+    ProductCommentsResource,
+    ProductCommentsListResource,
+
     ProductsResource,
     ProductsListResource,
 
@@ -118,7 +124,8 @@ api_resources_cross =[
     RouteAdminSettingsResource,
     AttachmentsInfoResource,
     ClientInfoByClientResource,
-    ClientAddressesByClientResource
+    ClientAddressesByClientResource,
+    ProductsCategoriesByProductCategoryResource
 ]
 def init_single_resource(api, resource, route, endpoint):
     api.add_resource(resource, route, endpoint=endpoint)

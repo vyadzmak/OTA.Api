@@ -1,4 +1,4 @@
-from models.db_models.models import ClientInfo
+from models.db_models.models import ProductCategories
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -6,13 +6,13 @@ import modules.db_model_tranformer_modules.db_model_transformer_module as db_tra
 import modules.db_help_modules.user_action_logging_module as user_action_logging
 import modules.image_path_converter_modules.image_path_converter as image_path_converter
 #PARAMS
-ENTITY_NAME = "Client Info by Client"
-MODEL = ClientInfo
-ROUTE ="/clientInfoByClient"
-END_POINT = "client-info-by-client"
+ENTITY_NAME = "Products Categories by Product Category"
+MODEL = ProductCategories
+ROUTE ="/productsCategoriesByProductCategory"
+END_POINT = "products-categories-by-product-category"
 
 #NESTED SCHEMA FIELDS
-attachment_data = {
+default_image_data_product_categories = {
     'id': fields.Integer,
     'original_file_name': fields.String,
     'file_path': fields.String,
@@ -23,20 +23,21 @@ attachment_data = {
     'thumb_file_path': fields.String,
     'optimized_size_file_path': fields.String
 }
+
 #OUTPUT SCHEMA
 output_fields = {
     'id': fields.Integer,
-    'client_id':fields.Integer,
-    'logo_attachment_id': fields.Integer,
-    'email': fields.String,
-    'main_info': fields.String,
-    'additional_info': fields.String,
-    'attachment_data':fields.Nested(attachment_data)
+    'name':fields.String,
+    'default_image_id': fields.Integer,
+    'default_image_data':fields.Nested(default_image_data_product_categories),
+
+    'internal_categories_count':fields.Integer
 }
 
 
+
 #API METHODS FOR SINGLE ENTITY
-class ClientInfoByClientResource(Resource):
+class ProductsCategoriesByProductCategoryResource(Resource):
     def __init__(self):
         self.route = ROUTE
         self.end_point = END_POINT
@@ -49,19 +50,26 @@ class ClientInfoByClientResource(Resource):
             action_type='GET'
             parser = reqparse.RequestParser()
             parser.add_argument('user_id')
-            parser.add_argument('client_id')
+            parser.add_argument('category_id')
             args = parser.parse_args()
             if (len(args) == 0):
                 abort(400, message='Arguments not found')
             user_id = args['user_id']
-            client_id = args['client_id']
+            category_id = args['category_id']
             user_action_logging.log_user_actions(ROUTE,user_id, action_type)
-            client_info = session.query(ClientInfo).filter(ClientInfo.client_id==client_id).first()
-            if not client_info:
+            product_categories = session.query(ProductCategories).filter(ProductCategories.parent_category_id==category_id).all()
+            if not product_categories:
                 abort(400, message='Ошибка получения данных. Данные не найдены')
-            image_path_converter.convert_path(client_info.attachment_data)
 
-            return client_info
+            for category in product_categories:
+                if (category.default_image_data!=None):
+                    image_path_converter.convert_path(category.default_image_data)
+                sub_cats = session.query(ProductCategories).filter(ProductCategories.parent_category_id==category.id).all()
+                if (not sub_cats):
+                    continue
+                category.internal_categories_count = len(sub_cats)
+
+            return product_categories
         except Exception as e:
             if (hasattr(e,'data')):
                 if (e.data!=None and "message" in e.data):

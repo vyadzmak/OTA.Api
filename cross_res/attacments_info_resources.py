@@ -2,7 +2,9 @@ from models.db_models.models import Attachments
 from db.db import session
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
 import modules.db_help_modules.user_action_logging_module as user_action_logging
+import modules.image_path_converter_modules.image_path_converter as image_path_converter
 from sqlalchemy import and_
+import models.app_models.setting_models.setting_model as settings
 import base64
 import datetime
 
@@ -60,6 +62,7 @@ class AttachmentsInfoResource(Resource):
                 if (not attachment):
                     continue
 
+                image_path_converter.convert_path(attachment)
                 attachments.append(attachment)
 
             if not attachments:

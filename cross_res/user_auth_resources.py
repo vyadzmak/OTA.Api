@@ -1,4 +1,4 @@
-from models.db_models.models import UserLogins, Orders
+from models.db_models.models import UserLogins, Orders,Settings
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -6,8 +6,9 @@ import modules.db_model_tranformer_modules.db_model_transformer_module as db_tra
 from sqlalchemy import and_
 import base64
 import datetime
-import modules.json_serializator_modules.json_serializator as json_serializator
-import copy
+import models.app_models.setting_models.setting_model as settings
+import urllib.parse
+
 # PARAMS
 ENTITY_NAME = "User Auth"
 ROUTE = "/userAuth"
@@ -47,7 +48,9 @@ output_fields = {
     'password': fields.String,
     'user_data': fields.Nested(login_user_data),
     'orders_count':fields.Integer,
-    'last_login_date':fields.DateTime
+    'last_login_date':fields.DateTime,
+    'no_image_url': fields.String
+
 
 }
 
@@ -98,6 +101,13 @@ class UserAuthResource(Resource):
             if (orders!=None):
                 user_login.orders_count = len(orders)
 
+
+            #no image url
+            setting = session.query(Settings).filter(Settings.name=='no_image_url').first()
+            if (not setting):
+                return user_login
+            api_url = settings.API_URL
+            user_login.no_image_url=urllib.parse.urljoin(api_url, setting.value)
             return user_login
         except Exception as e:
             if (hasattr(e,'data')):
