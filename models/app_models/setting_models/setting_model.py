@@ -29,7 +29,11 @@ UPLOADS_FOLDER_THUMBS = UPLOADS_FOLDER+"/thumbs/"
 #upload folder optimized files
 UPLOADS_FOLDER_OPTIMIZED = UPLOADS_FOLDER+"/optimized/"
 
+#thumbs size
+THUMB_SIZE = [256,256]
 
+#optimized size
+OPTIMIZED_SIZE = [1024,768]
 
 #allowed extensions
 ALLOWED_EXTENSIONS = ['jpg','jpeg','png','bmp']

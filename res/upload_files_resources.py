@@ -11,8 +11,9 @@ import re
 import subprocess
 from pathlib import Path
 from models.app_models.setting_models.setting_model import ROOT_DIR,UPLOADS_FOLDER_ORIGINAL, UPLOADS_FOLDER_OPTIMIZED, \
-    UPLOADS_FOLDER_THUMBS, ALLOWED_EXTENSIONS
+    UPLOADS_FOLDER_THUMBS, ALLOWED_EXTENSIONS, THUMB_SIZE, OPTIMIZED_SIZE
 
+import modules.img_resizer_modules.img_resizer_module as image_resizer
 
 ENTITY_NAME = "Upload Files"
 #MODEL = Log
@@ -49,13 +50,13 @@ class UploadFileResource(Resource):
                 for j_file in f_list:
                     files.append(j_file)
 
-            dir_id = str(uuid.uuid4().hex)
-            project_folder = os.path.join(UPLOADS_FOLDER_ORIGINAL, dir_id)
+            # dir_id = str(uuid.uuid4().hex)
+            # project_folder = os.path.join(UPLOADS_FOLDER_ORIGINAL, dir_id)
             result_ids =[]
             for file in files:
 
-                if not os.path.exists(ROOT_DIR+project_folder):
-                    os.makedirs(ROOT_DIR+project_folder)
+                # if not os.path.exists(ROOT_DIR+project_folder):
+                #     os.makedirs(ROOT_DIR+project_folder)
                 if file and allowed_file(file.filename):
                     # From flask uploading tutorial
                     filename = file.filename  # str(secure_filename(file.filename)).lower()
@@ -66,21 +67,35 @@ class UploadFileResource(Resource):
                     short_name = short_name.replace(" ","_")
                     extension = Path(filename).suffix
                     file_id = str(uuid.uuid4().hex)
-                    result_file_name = short_name + "_" + file_id + extension
+                    result_file_name = file_id + extension
                     print("Save to " + result_file_name)
-                    file_path = os.path.join(project_folder, result_file_name)
+                    file_path = os.path.join(UPLOADS_FOLDER_ORIGINAL, result_file_name)
                     file_path = file_path.replace('\\','/')
-                    file.save(ROOT_DIR+file_path)
-                    file_size = os.path.getsize(ROOT_DIR+file_path)
+                    save_path =ROOT_DIR+file_path
+                    file.save(save_path)
+                    file_size = os.path.getsize(save_path)
 
-                    attributes = {'original_file_name':filename,'file_size':file_size,'file_path':file_path,'user_creator_id':user_creator_id}
+
+                    thumbs_file_path = UPLOADS_FOLDER_THUMBS
+                    thumbs_name = file_id+".jpg"
+                    thumbs_file_path_db = os.path.join(thumbs_file_path,thumbs_name)
+                    thumbs_save_path =ROOT_DIR+os.path.join(thumbs_file_path,thumbs_name).replace('\\','/')
+                    image_resizer.resize_image(save_path,thumbs_save_path,THUMB_SIZE)
+
+                    optimized_file_path = UPLOADS_FOLDER_OPTIMIZED
+                    optimized_name = file_id + ".jpg"
+                    optimized_file_path_db = os.path.join(optimized_file_path,optimized_name)
+                    optimized_save_path =  ROOT_DIR +os.path.join(optimized_file_path, optimized_name).replace('\\', '/')
+                    image_resizer.resize_image(save_path, optimized_save_path, OPTIMIZED_SIZE)
+
+                    attributes = {'original_file_name':filename,'file_size':file_size,'file_path':file_path,'user_creator_id':user_creator_id,'thumb_file_path':thumbs_file_path_db,'optimized_size_file_path':optimized_file_path_db}
 
                     attachment = Attachments(attributes)
                     session.add(attachment)
                     session.commit()
                     result_ids.append(attachment.id)
 
-                    #ЗДЕСЬ НАДО ВХЕРАЧИТЬ СЖАТИЕ ЕСЛИ НАДО
+                    #ЗДЕСЬ НАДО ВХЕРАЧИТЬ СЖАТИЕ ЕСЛИ НАДО, А ОНО НАДО
                     # return {}
                 else:
                     # return error

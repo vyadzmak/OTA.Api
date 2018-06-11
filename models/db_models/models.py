@@ -50,8 +50,8 @@ class Attachments(Base):
         db_tranformer.transform_constructor_params(self, args)
         self.upload_date = datetime.datetime.now(datetime.timezone.utc)
         self.uid = str(uuid.uuid4())
-        self.thumb_file_path = None
-        self.optimized_size_file_path = None
+        #self.thumb_file_path = None
+        #self.optimized_size_file_path = None
 
 
 # brands catalog

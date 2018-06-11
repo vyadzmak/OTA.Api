@@ -7,10 +7,10 @@ import modules.db_model_tranformer_modules.db_model_transformer_module as db_tra
 import models.app_models.setting_models.setting_model as settings
 from pathlib import Path
 #PARAMS
-ENTITY_NAME = "Attachment Original View"
+ENTITY_NAME = "Attachment Optimized View"
 #MODEL = Settings
-ROUTE ="/uploads/original"
-END_POINT = "attachment-original-view"
+ROUTE ="/uploads/optimized"
+END_POINT = "attachment-optimized-view"
 
 #NESTED SCHEMA FIELDS
 
@@ -23,7 +23,7 @@ output_fields = {
 
 
 #API METHODS FOR SINGLE ENTITY
-class AttachmentOriginalViewResource(Resource):
+class AttachmentOptimizedViewResource(Resource):
     def __init__(self):
         self.route = ROUTE+'/<path:image>'
         self.end_point = END_POINT
@@ -32,7 +32,7 @@ class AttachmentOriginalViewResource(Resource):
     #@marshal_with(output_fields)
     def get(self, image):
         try:
-            file_path =settings.ROOT_DIR.replace("\\","/")+"/"+settings.UPLOADS_FOLDER_ORIGINAL
+            file_path =settings.ROOT_DIR.replace("\\","/")+"/"+settings.UPLOADS_FOLDER_OPTIMIZED
             return send_from_directory(file_path,image)
         except Exception as e:
             abort(404, message="File not found")
