@@ -40,6 +40,7 @@ from cross_res.route_admin_users_resources import *
 from cross_res.route_admin_clients_resources import *
 from cross_res.route_admin_log_resources import *
 from cross_res.route_admin_settings_resources import *
+from cross_res.attacments_info_resources import *
 
 #[resource_class]
 api_resources_crud =[
@@ -113,7 +114,8 @@ api_resources_cross =[
     RouteAdminUsersResource,
     RouteAdminClientsResource,
     RouteAdminLogsResource,
-    RouteAdminSettingsResource
+    RouteAdminSettingsResource,
+    AttachmentsInfoResource
 ]
 def init_single_resource(api, resource, route, endpoint):
     api.add_resource(resource, route, endpoint=endpoint)
