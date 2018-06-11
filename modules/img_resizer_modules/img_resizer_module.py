@@ -8,6 +8,12 @@ def resize_image(file_path,output_path,target_size):
     try:
         with open(file_path, 'r+b') as f:
             with Image.open(f) as image:
+                fill_color = '#FFFFFF'
+                if image.mode in ('RGBA', 'LA'):
+                    background = Image.new(image.mode[:-1], image.size, fill_color)
+                    background.paste(image, image.split()[-1])
+                    image = background
+
                 resize_k =1
                 original_width = image.width
                 original_height = image.height
