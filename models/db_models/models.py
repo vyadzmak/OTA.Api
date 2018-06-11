@@ -302,6 +302,7 @@ class Products(Base):
 
 
     default_image_data = relationship('Attachments', backref="default_image_data_product_products")
+    #product_category_data6 = relationship('ProductCategories', backref="product_category_data6")
 
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)

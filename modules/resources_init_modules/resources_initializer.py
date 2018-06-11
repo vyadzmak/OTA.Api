@@ -46,6 +46,12 @@ from cross_res.attacments_info_resources import *
 from cross_res.client_info_by_client_resources import *
 from cross_res.client_addresses_by_client_resources import *
 from cross_res.products_categories_by_product_category_resources import *
+from cross_res.products_by_product_category_resources import *
+from cross_res.route_catalog_products_general_resources import *
+from cross_res.route_catalog_products_gallery_resources import *
+from cross_res.route_catalog_products_recommendations_resources import *
+from cross_res.route_catalog_products_comments_resources import *
+
 #[resource_class]
 api_resources_crud =[
     AdminSettingsResource,
@@ -125,7 +131,12 @@ api_resources_cross =[
     AttachmentsInfoResource,
     ClientInfoByClientResource,
     ClientAddressesByClientResource,
-    ProductsCategoriesByProductCategoryResource
+    ProductsCategoriesByProductCategoryResource,
+    ProductsByProductCategoryResource,
+    RouteCatalogProductsGeneralResource,
+    RouteCatalogProductsGalleryResource,
+    RouteCatalogProductsRecommendationsResource,
+    RouteCatalogProductsCommentsResource
 ]
 def init_single_resource(api, resource, route, endpoint):
     api.add_resource(resource, route, endpoint=endpoint)

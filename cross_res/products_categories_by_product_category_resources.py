@@ -1,4 +1,4 @@
-from models.db_models.models import ProductCategories
+from models.db_models.models import ProductCategories,Products
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -31,17 +31,39 @@ output_fields = {
     'default_image_id': fields.Integer,
     'default_image_data':fields.Nested(default_image_data_product_categories),
 
-    'internal_categories_count':fields.Integer
+    'internal_categories_count':fields.Integer,
+    'internal_products_count': fields.Integer
 }
 
 
 
 #API METHODS FOR SINGLE ENTITY
 class ProductsCategoriesByProductCategoryResource(Resource):
+    def get_to_all_categories(self,ids):
+
+        result_ids = []
+
+        for category_id in ids:
+            product_categories = session.query(ProductCategories).filter(
+                ProductCategories.parent_category_id == category_id).all()
+
+            if (not product_categories):
+                continue
+            for p_cat in product_categories:
+                result_ids.append(p_cat.id)
+
+        if (len(result_ids)!=0):
+            self.get_to_all_categories(result_ids)
+        else:
+            self.x_res= ids
+
+
     def __init__(self):
         self.route = ROUTE
         self.end_point = END_POINT
+        self.x_res =[]
         pass
+
 
     @marshal_with(output_fields)
     def get(self):
@@ -61,13 +83,31 @@ class ProductsCategoriesByProductCategoryResource(Resource):
             if not product_categories:
                 abort(400, message='Ошибка получения данных. Данные не найдены')
 
+
+
             for category in product_categories:
+                res_ids = []
+                res_ids.append(category.id)
+                category.internal_products_count=0
+                self.get_to_all_categories(res_ids)
+                for x_cat in self.x_res:
+                    products = session.query(Products).filter(Products.category_id == x_cat).all()
+
+                    if (not products):
+                        continue
+                    category.internal_products_count+=len(products)
+                    pass
+
                 if (category.default_image_data!=None):
                     image_path_converter.convert_path(category.default_image_data)
                 sub_cats = session.query(ProductCategories).filter(ProductCategories.parent_category_id==category.id).all()
                 if (not sub_cats):
                     continue
                 category.internal_categories_count = len(sub_cats)
+
+
+            #x_res =self.x_res
+
 
             return product_categories
         except Exception as e:
