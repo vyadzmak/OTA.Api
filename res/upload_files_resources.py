@@ -104,4 +104,5 @@ class UploadFileResource(Resource):
 
             return result_ids
         except Exception as e:
-            return {"State": "Error"}
+            session.rollback()
+            abort(400, message="Error while adding record " + ENTITY_NAME+". Exception: "+str(e))
