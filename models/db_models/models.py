@@ -211,6 +211,8 @@ class Orders(Base):
     amount_discount = Column('amount_discount', Float)
     total_amount = Column('total_amount', Float)
     order_state_id = Column('order_state_id', ForeignKey('order_states.id'))
+
+    #order_user_data = relationship('Users', backref="order_user_data_back")
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
         self.creation_date = datetime.datetime.now(datetime.timezone.utc)
@@ -468,7 +470,7 @@ class ViewSettings(Base):
     show_badge_discount = Column('show_badge_discount', Boolean)
     show_badge_stock = Column('show_badge_stock', Boolean)
     show_badge_partners = Column('show_badge_partners', Boolean)
-
+    default_slider_image = Column('default_slider_image',Integer)
     slider_images = Column('slider_images', postgresql.ARRAY(Integer))
     recomendation_elements = Column('recomendation_elements', postgresql.ARRAY(Integer))
     brand_elements = Column('brand_elements', postgresql.ARRAY(Integer))

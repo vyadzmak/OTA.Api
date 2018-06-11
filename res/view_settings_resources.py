@@ -18,6 +18,7 @@ output_fields = {
     'show_slider': fields.Boolean,
     'show_badges': fields.Boolean,
     'show_recommendations': fields.Boolean,
+    #'show_brands':fields.Boolean,
     'show_badge_popular': fields.Boolean,
     'show_badge_discount': fields.Boolean,
     'show_badge_stock': fields.Boolean,

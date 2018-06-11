@@ -51,6 +51,11 @@ from cross_res.route_catalog_products_general_resources import *
 from cross_res.route_catalog_products_gallery_resources import *
 from cross_res.route_catalog_products_recommendations_resources import *
 from cross_res.route_catalog_products_comments_resources import *
+from cross_res.route_orders_resources import *
+from cross_res.route_view_settings_general_resources import *
+from cross_res.route_view_settings_slider_resources import *
+from cross_res.route_view_settings_badges_resources import *
+
 
 #[resource_class]
 api_resources_crud =[
@@ -136,7 +141,11 @@ api_resources_cross =[
     RouteCatalogProductsGeneralResource,
     RouteCatalogProductsGalleryResource,
     RouteCatalogProductsRecommendationsResource,
-    RouteCatalogProductsCommentsResource
+    RouteCatalogProductsCommentsResource,
+    RouteOrdersResource,
+    RouteViewSettingsGeneralResource,
+    RouteViewSettingsSliderResource,
+    RouteViewSettingsBadgesResource
 ]
 def init_single_resource(api, resource, route, endpoint):
     api.add_resource(resource, route, endpoint=endpoint)
