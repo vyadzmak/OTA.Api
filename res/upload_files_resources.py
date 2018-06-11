@@ -42,7 +42,8 @@ class UploadFileResource(Resource):
         try:
             f = request.form
             user_creator_id = f.get('user_id')
-
+            if (user_creator_id==None):
+                abort(400, message = "Bad request. User id not found")
             f_list = []
             files = []
             for t in request.files:
