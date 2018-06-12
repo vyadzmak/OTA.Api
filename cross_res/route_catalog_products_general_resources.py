@@ -35,6 +35,8 @@ output_fields = {
     'partner_id':fields.Integer,
     'currency_id': fields.Integer,
     'unit_id': fields.Integer,
+    'gallery_images': fields.List(fields.Integer),
+    'product_recomendations': fields.List(fields.Integer)
 }
 
 
