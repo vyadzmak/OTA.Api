@@ -57,6 +57,7 @@ from cross_res.route_orders_resources import *
 from cross_res.route_view_settings_general_resources import *
 from cross_res.route_view_settings_slider_resources import *
 from cross_res.route_view_settings_badges_resources import *
+from cross_res.city_catalog_by_area_resources import *
 
 
 #[resource_class]
@@ -152,7 +153,8 @@ api_resources_cross =[
     RouteOrdersResource,
     RouteViewSettingsGeneralResource,
     RouteViewSettingsSliderResource,
-    RouteViewSettingsBadgesResource
+    RouteViewSettingsBadgesResource,
+    CityCatalogByAreaResource
 ]
 def init_single_resource(api, resource, route, endpoint):
     api.add_resource(resource, route, endpoint=endpoint)
