@@ -45,6 +45,8 @@ class RouteCatalogProductsGalleryResource(Resource):
     @marshal_with(output_fields)
     def get(self):
         try:
+
+
             action_type='GET'
             parser = reqparse.RequestParser()
             parser.add_argument('user_id')
@@ -65,19 +67,19 @@ class RouteCatalogProductsGalleryResource(Resource):
             entity = product
             if not entity:
                 abort(404, message=ENTITY_NAME + " {} doesn't exist".format(id))
-            api_url = settings.API_URL
-            if hasattr(entity, 'default_image_data'):
-                if (entity.default_image_data != None and entity.default_image_data.file_path != None):
-                    entity.default_image_data.file_path = urllib.parse.urljoin(api_url,
-                                                                               entity.default_image_data.file_path)
-            if hasattr(entity, 'default_image_data'):
-                if (entity.default_image_data != None and entity.default_image_data.thumb_file_path != None):
-                    entity.default_image_data.thumb_file_path = urllib.parse.urljoin(api_url,
-                                                                                     entity.default_image_data.thumb_file_path)
-            if hasattr(entity, 'default_image_data'):
-                if (entity.default_image_data != None and entity.default_image_data.optimized_size_file_path != None):
-                    entity.default_image_data.optimized_size_file_path = urllib.parse.urljoin(api_url,
-                                                                                              entity.default_image_data.optimized_size_file_path)
+            #api_url = settings.API_URL
+            # if hasattr(entity, 'default_image_data'):
+            #     if (entity.default_image_data != None and entity.default_image_data.file_path != None):
+            #         entity.default_image_data.file_path = urllib.parse.urljoin(api_url,
+            #                                                                    entity.default_image_data.file_path)
+            # if hasattr(entity, 'default_image_data'):
+            #     if (entity.default_image_data != None and entity.default_image_data.thumb_file_path != None):
+            #         entity.default_image_data.thumb_file_path = urllib.parse.urljoin(api_url,
+            #                                                                          entity.default_image_data.thumb_file_path)
+            # if hasattr(entity, 'default_image_data'):
+            #     if (entity.default_image_data != None and entity.default_image_data.optimized_size_file_path != None):
+            #         entity.default_image_data.optimized_size_file_path = urllib.parse.urljoin(api_url,
+            #                                                                                   entity.default_image_data.optimized_size_file_path)
 
             entity.images_data = []
 
@@ -94,4 +96,6 @@ class RouteCatalogProductsGalleryResource(Resource):
                 if (e.data!=None and "message" in e.data):
                     abort(400,message =e.data["message"])
             abort(400, message = "Неопознанная ошибка")
-
+        finally:
+            pass
+            #session.rollback()

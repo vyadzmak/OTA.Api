@@ -7,7 +7,7 @@ from sqlalchemy import and_
 import models.app_models.setting_models.setting_model as settings
 import base64
 import datetime
-
+import copy
 # PARAMS
 ENTITY_NAME = "Attachments Info"
 ROUTE = "/attachmentsInfo"
@@ -44,6 +44,7 @@ class AttachmentsInfoResource(Resource):
     def get(self):
         try:
 
+
             action_type='GET'
             parser = reqparse.RequestParser()
             parser.add_argument('user_id')
@@ -62,16 +63,21 @@ class AttachmentsInfoResource(Resource):
                 if (not attachment):
                     continue
 
-                image_path_converter.convert_path(attachment)
+                #image_path_converter.convert_path(attachment)
                 attachments.append(attachment)
 
             if not attachments:
-                abort(400, message='Ошибка получения данных. Данные не найдены')
+                return []
+                # abort(400, message='Ошибка получения данных. Данные не найдены')
 
+            # result = copy.deepcopy(attachments)
             return attachments
         except Exception as e:
             if (hasattr(e,'data')):
                 if (e.data!=None and "message" in e.data):
                     abort(400,message =e.data["message"])
             abort(400, message = "Неопознанная ошибка")
+        finally:
+            pass
+            #session.rollback()
 

@@ -45,31 +45,41 @@ class PartnersResource(Resource):
 
     @marshal_with(output_fields)
     def get(self, id):
-        entity = session.query(MODEL).filter(MODEL.id == id).first()
-        if not entity:
-            abort(404, message=ENTITY_NAME+" {} doesn't exist".format(id))
-        api_url = settings.API_URL
-        if hasattr(entity, 'default_image_data'):
-            if (entity.default_image_data != None and entity.default_image_data.file_path != None):
-                entity.default_image_data.file_path = urllib.parse.urljoin(api_url, entity.default_image_data.file_path)
-        if hasattr(entity, 'default_image_data'):
-            if (entity.default_image_data != None and entity.default_image_data.thumb_file_path != None):
-                entity.default_image_data.thumb_file_path = urllib.parse.urljoin(api_url,
-                                                                                 entity.default_image_data.thumb_file_path)
-        if hasattr(entity, 'default_image_data'):
-            if (entity.default_image_data != None and entity.default_image_data.optimized_size_file_path != None):
-                entity.default_image_data.optimized_size_file_path = urllib.parse.urljoin(api_url,
-                                                                                          entity.default_image_data.optimized_size_file_path)
+        try:
+            # session.autocommit = False
+            # session.autoflush = False
 
-        entity.images_data =[]
+            entity = session.query(MODEL).filter(MODEL.id == id).first()
+            if not entity:
+                abort(404, message=ENTITY_NAME+" {} doesn't exist".format(id))
+            # api_url = settings.API_URL
+            # if hasattr(entity, 'default_image_data'):
+            #     if (entity.default_image_data != None and entity.default_image_data.file_path != None):
+            #         entity.default_image_data.file_path = urllib.parse.urljoin(api_url, entity.default_image_data.file_path)
+            # if hasattr(entity, 'default_image_data'):
+            #     if (entity.default_image_data != None and entity.default_image_data.thumb_file_path != None):
+            #         entity.default_image_data.thumb_file_path = urllib.parse.urljoin(api_url,
+            #                                                                          entity.default_image_data.thumb_file_path)
+            # if hasattr(entity, 'default_image_data'):
+            #     if (entity.default_image_data != None and entity.default_image_data.optimized_size_file_path != None):
+            #         entity.default_image_data.optimized_size_file_path = urllib.parse.urljoin(api_url,
+            #                                                                                   entity.default_image_data.optimized_size_file_path)
 
-        if (entity.images!=None and len(entity.images)>0):
-                for img_id in entity.images:
-                    image =session.query(Attachments).filter(Attachments.id== img_id).first()
-                    if not image:
-                        continue
-                    entity.images_data.append(image)
-        return entity
+            entity.images_data =[]
+
+            if (entity.images!=None and len(entity.images)>0):
+                    for img_id in entity.images:
+                        image =session.query(Attachments).filter(Attachments.id== img_id).first()
+                        if not image:
+                            continue
+                        entity.images_data.append(image)
+            return entity
+        except Exception as e:
+            session.rollback()
+            abort(400, message="Error while update " + ENTITY_NAME)
+        finally:
+            pass
+            #session.rollback()
 
     def delete(self, id):
         try:
@@ -86,39 +96,48 @@ class PartnersResource(Resource):
     @marshal_with(output_fields)
     def put(self, id):
         try:
+            # session.autocommit = False
+            # session.autoflush = False
+
             json_data = request.get_json(force=True)
             entity = session.query(MODEL).filter(MODEL.id == id).first()
             if not entity:
                 abort(404, message=ENTITY_NAME + " {} doesn't exist".format(id))
             db_transformer.transform_update_params(entity,json_data)
 
-            api_url = settings.API_URL
-            if hasattr(entity, 'default_image_data'):
-                if (entity.default_image_data!=None and entity.default_image_data.file_path != None):
-                    entity.default_image_data.file_path = urllib.parse.urljoin(api_url, entity.default_image_data.file_path)
-            if hasattr(entity, 'default_image_data'):
-                if (entity.default_image_data!=None and entity.default_image_data.thumb_file_path != None):
-                    entity.default_image_data.thumb_file_path = urllib.parse.urljoin(api_url,
-                                                                                     entity.default_image_data.thumb_file_path)
-            if hasattr(entity, 'default_image_data'):
-                if (entity.default_image_data!=None and entity.default_image_data.optimized_size_file_path != None):
-                    entity.default_image_data.optimized_size_file_path = urllib.parse.urljoin(api_url,
-                                                                                              entity.default_image_data.optimized_size_file_path)
+
+            session.add(entity)
+            session.commit()
+
+            # api_url = settings.API_URL
+            # if hasattr(entity, 'default_image_data'):
+            #     if (entity.default_image_data != None and entity.default_image_data.file_path != None):
+            #         entity.default_image_data.file_path = urllib.parse.urljoin(api_url,
+            #                                                                    entity.default_image_data.file_path)
+            # if hasattr(entity, 'default_image_data'):
+            #     if (entity.default_image_data != None and entity.default_image_data.thumb_file_path != None):
+            #         entity.default_image_data.thumb_file_path = urllib.parse.urljoin(api_url,
+            #                                                                          entity.default_image_data.thumb_file_path)
+            # if hasattr(entity, 'default_image_data'):
+            #     if (entity.default_image_data != None and entity.default_image_data.optimized_size_file_path != None):
+            #         entity.default_image_data.optimized_size_file_path = urllib.parse.urljoin(api_url,
+            #                                                                                   entity.default_image_data.optimized_size_file_path)
 
             entity.images_data = []
 
-            if (entity.images!=None and len(entity.images) > 0):
+            if (entity.images != None and len(entity.images) > 0):
                 for img_id in entity.images:
                     image = session.query(Attachments).filter(Attachments.id == img_id).first()
                     if not image:
                         continue
                     entity.images_data.append(image)
-            session.add(entity)
-            session.commit()
             return entity, 201
         except Exception as e:
             session.rollback()
             abort(400, message="Error while update "+ENTITY_NAME)
+        finally:
+            pass
+            #session.rollback()
 
 #API METHODS FOR LIST ENTITIES
 class PartnersListResource(Resource):
@@ -129,17 +148,27 @@ class PartnersListResource(Resource):
 
     @marshal_with(output_fields)
     def get(self):
-        entities = session.query(MODEL).all()
-        for entity in entities:
-            entity.images_data = []
+        try:
+            # session.autocommit = False
+            # session.autoflush = False
 
-            if (entity.images!=None and len(entity.images) > 0):
-                for img_id in entity.images:
-                    image = session.query(Attachments).filter(Attachments.id == img_id).first()
-                    if not image:
-                        continue
-                    entity.images_data.append(image)
-        return entities
+            entities = session.query(MODEL).all()
+            for entity in entities:
+                entity.images_data = []
+
+                if (entity.images!=None and len(entity.images) > 0):
+                    for img_id in entity.images:
+                        image = session.query(Attachments).filter(Attachments.id == img_id).first()
+                        if not image:
+                            continue
+                        entity.images_data.append(image)
+            return entities
+        except Exception as e:
+            session.rollback()
+            abort(400, message="Error while update " + ENTITY_NAME)
+        finally:
+            pass
+            #session.rollback()
 
     @marshal_with(output_fields)
     def post(self):

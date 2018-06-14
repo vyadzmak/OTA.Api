@@ -14,6 +14,11 @@ def resize_image(file_path,output_path,target_size):
                     background.paste(image, image.split()[-1])
                     image = background
 
+                if (image.mode in ('P')):
+                    r_path =file_path.replace('/','\\')
+                    t_image = Image.open(r_path).convert('RGB')
+                    background =t_image
+                    image = background
                 resize_k =1
                 original_width = image.width
                 original_height = image.height

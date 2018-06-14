@@ -41,19 +41,28 @@ class AttachmentsResource(Resource):
 
     @marshal_with(output_fields)
     def get(self, id):
-        entity = session.query(MODEL).filter(MODEL.id == id).first()
-        if not entity:
-            abort(404, message=ENTITY_NAME+" {} doesn't exist".format(id))
-        api_url = settings.API_URL
-        if (entity.file_path!=None):
-            entity.file_path=urllib.parse.urljoin(api_url, entity.file_path)
-
-        if (entity.thumb_file_path!=None):
-            entity.thumb_file_path=urllib.parse.urljoin(api_url, entity.thumb_file_path)
-
-        if (entity.optimized_size_file_path!=None):
-            entity.optimized_size_file_path=urllib.parse.urljoin(api_url, entity.optimized_size_file_path)
-        return entity
+        try:
+            # session.autocommit = False
+            # session.autoflush = False
+            entity = session.query(MODEL).filter(MODEL.id == id).first()
+            if not entity:
+                abort(404, message=ENTITY_NAME+" {} doesn't exist".format(id))
+            # api_url = settings.API_URL
+            # if (entity.file_path!=None):
+            #     entity.file_path=urllib.parse.urljoin(api_url, entity.file_path)
+            #
+            # if (entity.thumb_file_path!=None):
+            #     entity.thumb_file_path=urllib.parse.urljoin(api_url, entity.thumb_file_path)
+            #
+            # if (entity.optimized_size_file_path!=None):
+            #     entity.optimized_size_file_path=urllib.parse.urljoin(api_url, entity.optimized_size_file_path)
+            return entity
+        except Exception as e:
+            session.rollback()
+            abort(400, message="Error while update " + ENTITY_NAME)
+        finally:
+            pass
+            #session.rollback()
 
     def delete(self, id):
         try:
@@ -70,6 +79,8 @@ class AttachmentsResource(Resource):
     @marshal_with(output_fields)
     def put(self, id):
         try:
+            # session.autocommit = False
+            # session.autoflush = False
             json_data = request.get_json(force=True)
             entity = session.query(MODEL).filter(MODEL.id == id).first()
             if not entity:

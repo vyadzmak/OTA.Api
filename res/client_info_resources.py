@@ -43,12 +43,21 @@ class ClientInfoResource(Resource):
 
     @marshal_with(output_fields)
     def get(self, id):
-        entity = session.query(MODEL).filter(MODEL.id == id).first()
-        image_path_converter.convert_path(entity.attachment_data)
-        if not entity:
-            abort(404, message=ENTITY_NAME+" {} doesn't exist".format(id))
-        return entity
+        try:
+            # session.autocommit = False
+            # session.autoflush = False
 
+            entity = session.query(MODEL).filter(MODEL.id == id).first()
+            image_path_converter.convert_path(entity.attachment_data)
+            if not entity:
+                abort(404, message=ENTITY_NAME+" {} doesn't exist".format(id))
+            return entity
+        except Exception as e:
+            session.rollback()
+            abort(400, message="Error while update " + ENTITY_NAME)
+        finally:
+            pass
+            #session.rollback()
     def delete(self, id):
         try:
             entity = session.query(MODEL).filter(MODEL.id == id).first()

@@ -70,6 +70,7 @@ class ProductsCategoriesByProductCategoryResource(Resource):
     def get(self):
         try:
 
+
             action_type='GET'
             parser = reqparse.RequestParser()
             parser.add_argument('user_id')
@@ -99,22 +100,23 @@ class ProductsCategoriesByProductCategoryResource(Resource):
                     category.internal_products_count+=len(products)
                     pass
 
-                if (category.default_image_data!=None):
-                    image_path_converter.convert_path(category.default_image_data)
+                # if (category.default_image_data!=None):
+                #     image_path_converter.convert_path(category.default_image_data)
                 sub_cats = session.query(ProductCategories).filter(ProductCategories.parent_category_id==category.id).all()
                 if (not sub_cats):
                     continue
                 category.internal_categories_count = len(sub_cats)
 
 
-            result = copy.deepcopy(product_categories)
-            session.rollback()
-            return result
+
+            return product_categories
         except Exception as e:
             if (hasattr(e,'data')):
                 if (e.data!=None and "message" in e.data):
                     abort(400,message =e.data["message"])
             abort(400, message = "Неопознанная ошибка")
-
+        finally:
+            pass
+            #session.rollback()
 
 
