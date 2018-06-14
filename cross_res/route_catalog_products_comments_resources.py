@@ -52,12 +52,13 @@ class RouteCatalogProductsCommentsResource(Resource):
             user_action_logging.log_user_actions(ROUTE,user_id, action_type)
 
             # check login
-            product = session.query(ProductComments).filter(ProductComments.product_id==product_id).all()
+            comments = session.query(ProductComments).filter(ProductComments.product_id==product_id).all()
 
-            if not product:
-                abort(400, message='Ошибка получения данных. Данные не найдены')
+            if not comments:
+                return []
+                #abort(400, message='Ошибка получения данных. Данные не найдены')
 
-            return product
+            return comments
         except Exception as e:
             if (hasattr(e,'data')):
                 if (e.data!=None and "message" in e.data):

@@ -57,9 +57,14 @@ class RouteCatalogProductsRecommendationsResource(Resource):
                 abort(400, message='Ошибка получения данных. Данные не найдены')
 
             if (not product):
+
+
                 return products
 
             recommendations =product.product_recomendations
+
+            if (not recommendations):
+                return []
 
             if (len(recommendations)):
                 for recommend in recommendations:
