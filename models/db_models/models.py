@@ -31,6 +31,15 @@ class AdminSettings(Base):
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
 
+# area catalog
+class AreaCatalog(Base):
+        __tablename__ = 'area_catalog'
+        id = Column('id', Integer, primary_key=True)
+        name = Column('name', String(1000))
+
+        def __init__(self, *args):
+            db_tranformer.transform_constructor_params(self, args)
+
 
 # admin settings table
 class Attachments(Base):
@@ -68,6 +77,15 @@ class BrandsCatalog(Base):
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
 
+    # area catalog
+class CityCatalog(Base):
+        __tablename__ = 'city_catalog'
+        id = Column('id', Integer, primary_key=True)
+        name = Column('name', String(1000))
+        area_id= Column('area_id', ForeignKey('area_catalog.id'))
+        area_data = relationship("AreaCatalog",backref ="area_data")
+        def __init__(self, *args):
+            db_tranformer.transform_constructor_params(self, args)
 
 # client addresses
 class ClientAddresses(Base):
@@ -76,9 +94,15 @@ class ClientAddresses(Base):
     client_id = Column('client_id', ForeignKey('clients.id'))
     address = Column('address', String(500))
     is_default = Column('is_default', Boolean)
+    confirmed = Column('confirmed', Boolean)
+    name = Column('name', String(250))
+    code = Column('code', String(250))
 
+
+    city_id = Column('city_id', ForeignKey('city_catalog.id'))
+
+    city_data = relationship('CityCatalog', backref="city_data")
     related_clients = relationship('Clients', backref="client_addresses_data")
-
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
 

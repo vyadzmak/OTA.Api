@@ -168,6 +168,19 @@ class ProductsListResource(Resource):
         entities = session.query(MODEL).all()
         for entity in entities:
             entity.images_data = []
+            api_url = settings.API_URL
+            if hasattr(entity, 'default_image_data'):
+                if (entity.default_image_data != None and entity.default_image_data.file_path != None):
+                    entity.default_image_data.file_path = urllib.parse.urljoin(api_url,
+                                                                               entity.default_image_data.file_path)
+            if hasattr(entity, 'default_image_data'):
+                if (entity.default_image_data != None and entity.default_image_data.thumb_file_path != None):
+                    entity.default_image_data.thumb_file_path = urllib.parse.urljoin(api_url,
+                                                                                     entity.default_image_data.thumb_file_path)
+            if hasattr(entity, 'default_image_data'):
+                if (entity.default_image_data != None and entity.default_image_data.optimized_size_file_path != None):
+                    entity.default_image_data.optimized_size_file_path = urllib.parse.urljoin(api_url,
+                                                                                              entity.default_image_data.optimized_size_file_path)
 
             if (entity.gallery_images!=None and len(entity.gallery_images) > 0):
                 for img_id in entity.gallery_images:

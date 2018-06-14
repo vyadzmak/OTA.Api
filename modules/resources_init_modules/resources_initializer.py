@@ -1,8 +1,10 @@
 from res.clients_resources import *
 from res.admin_settings_resources import *
+from res.area_catalog_resources import *
 from res.attachments_resources import *
 from res.brands_catalog_resources import *
 from res.client_adresses_resources import *
+from res.city_catalog_resources import *
 from res.client_info_resources import *
 from res.client_types_resources import *
 from res.clients_resources import *
@@ -61,10 +63,15 @@ from cross_res.route_view_settings_badges_resources import *
 api_resources_crud =[
     AdminSettingsResource,
     AdminSettingsListResource,
+    AreaCatalogResource,
+    AreaCatalogListResource,
     AttachmentsResource,
     AttachmentsListResource,
     BrandsResource,
     BrandsListResource,
+
+    CityCatalogResource,
+    CityCatalogListResource,
     ClientAddressesResource,
     ClientAddressesListResource,
     ClientInfoResource,

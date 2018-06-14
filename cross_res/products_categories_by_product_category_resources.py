@@ -5,6 +5,7 @@ from flask_restful import Resource, fields, marshal_with, abort, reqparse
 import modules.db_model_tranformer_modules.db_model_transformer_module as db_transformer
 import modules.db_help_modules.user_action_logging_module as user_action_logging
 import modules.image_path_converter_modules.image_path_converter as image_path_converter
+import copy
 #PARAMS
 ENTITY_NAME = "Products Categories by Product Category"
 MODEL = ProductCategories
@@ -83,7 +84,7 @@ class ProductsCategoriesByProductCategoryResource(Resource):
             if not product_categories:
                 abort(400, message='Ошибка получения данных. Данные не найдены')
 
-
+            # product_categories = copy.deepcopy(product_categories)
 
             for category in product_categories:
                 res_ids = []
@@ -106,10 +107,9 @@ class ProductsCategoriesByProductCategoryResource(Resource):
                 category.internal_categories_count = len(sub_cats)
 
 
-            #x_res =self.x_res
-
-
-            return product_categories
+            result = copy.deepcopy(product_categories)
+            session.rollback()
+            return result
         except Exception as e:
             if (hasattr(e,'data')):
                 if (e.data!=None and "message" in e.data):
