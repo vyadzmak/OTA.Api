@@ -235,8 +235,14 @@ class Orders(Base):
     amount_discount = Column('amount_discount', Float)
     total_amount = Column('total_amount', Float)
     order_state_id = Column('order_state_id', ForeignKey('order_states.id'))
+    client_address_id = Column('client_address_id',ForeignKey('client_addresses.id'))
+    currency_id = Column('currency_id',ForeignKey('currency_catalog.id'))
 
-    #order_user_data = relationship('Users', backref="order_user_data_back")
+    currency_data = relationship('CurrencyCatalog',backref = "currency_data")
+    client_address_data = relationship('ClientAddresses',backref = "client_address_data")
+    order_state_data = relationship('OrderStates',backref = "order_state_data")
+    #order_user_data = relationship('Users',backref = "order_user_data")
+
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
         self.creation_date = datetime.datetime.now(datetime.timezone.utc)
@@ -478,6 +484,9 @@ class Users(Base):
     lock_state = Column('lock_state', Boolean)
 
     related_user_login = relationship('UserLogins', backref="user_data")
+    #client_data = relationship('Clients', backref="client_data")
+
+    #order_user_data = relationship('Orders', backref = "order_user_data")
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
 
