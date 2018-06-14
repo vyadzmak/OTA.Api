@@ -49,7 +49,8 @@ class CityCatalogByAreaResource(Resource):
             user_action_logging.log_user_actions(ROUTE,user_id, action_type)
             city_catalogs = session.query(CityCatalog).filter(CityCatalog.area_id==area_id).all()
             if not city_catalogs:
-                abort(400, message='Ошибка получения данных. Данные не найдены')
+                return []
+                #abort(400, message='Ошибка получения данных. Данные не найдены')
 
 
             return city_catalogs

@@ -39,8 +39,8 @@ OPTIMIZED_SIZE = [1024,768]
 ALLOWED_EXTENSIONS = ['jpg','jpeg','png','bmp']
 
 #API URL
-#API_URL ="http://127.0.0.1:5000/"
-API_URL ="http://10.0.2.2:5000/"
+API_URL ="http://127.0.0.1:5000/"
+#API_URL ="http://10.0.2.2:5000/"
 
 #use proxy
 USE_PROXY =False
