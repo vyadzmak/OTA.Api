@@ -29,6 +29,7 @@ output_fields = {
     'client_id':fields.Integer,
     'logo_attachment_id': fields.Integer,
     'email': fields.String,
+    'phone_number':fields.String,
     'main_info': fields.String,
     'additional_info': fields.String,
     'attachment_data':fields.Nested(attachment_data)
@@ -59,7 +60,7 @@ class ClientInfoByClientResource(Resource):
             client_info = session.query(ClientInfo).filter(ClientInfo.client_id==client_id).first()
             if not client_info:
                 abort(400, message='Ошибка получения данных. Данные не найдены')
-            image_path_converter.convert_path(client_info.attachment_data)
+            #image_path_converter.convert_path(client_info.attachment_data)
 
             return client_info
         except Exception as e:

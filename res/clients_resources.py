@@ -24,7 +24,8 @@ output_fields = {
     'registration_number':fields.String,
     'lock_state':fields.Boolean,
     'client_type_id':fields.Integer,
-    'client_type_data':fields.Nested(client_type_fields)
+    'client_type_data':fields.Nested(client_type_fields),
+    #'client_info_data':fields.Integer
 }
 
 

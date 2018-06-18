@@ -58,8 +58,9 @@ from cross_res.route_view_settings_general_resources import *
 from cross_res.route_view_settings_slider_resources import *
 from cross_res.route_view_settings_badges_resources import *
 from cross_res.city_catalog_by_area_resources import *
-
-
+from cross_res.users_by_client_resources import *
+from cross_res.order_positions_by_order_resources import *
+from cross_res.manage_users_resources import *
 #[resource_class]
 api_resources_crud =[
     AdminSettingsResource,
@@ -154,7 +155,11 @@ api_resources_cross =[
     RouteViewSettingsGeneralResource,
     RouteViewSettingsSliderResource,
     RouteViewSettingsBadgesResource,
-    CityCatalogByAreaResource
+    CityCatalogByAreaResource,
+    UsersByClientResource,
+    OrderPositionsByOrderResource,
+    ManageUsersResource,
+    ManageUsersListResource
 ]
 def init_single_resource(api, resource, route, endpoint):
     api.add_resource(resource, route, endpoint=endpoint)

@@ -30,6 +30,7 @@ output_fields = {
     'is_default': fields.Boolean,
     'name': fields.String,
     'confirmed':fields.Boolean,
+    'tobacco_alcohol_license':fields.Boolean,
     'code':fields.String,
     'city_id': fields.Integer,
     'city_data':fields.Nested(city_data_fields)

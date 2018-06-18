@@ -95,6 +95,7 @@ class ClientAddresses(Base):
     address = Column('address', String(500))
     is_default = Column('is_default', Boolean)
     confirmed = Column('confirmed', Boolean)
+    tobacco_alcohol_license=Column('tobacco_alcohol_license',Boolean)
     name = Column('name', String(250))
     code = Column('code', String(250))
 
