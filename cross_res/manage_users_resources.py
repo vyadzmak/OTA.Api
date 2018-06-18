@@ -3,6 +3,7 @@ from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
 import modules.db_model_tranformer_modules.db_model_transformer_module as db_transformer
+import datetime
 import base64
 # PARAMS
 ENTITY_NAME = "Manage Users"
@@ -11,6 +12,15 @@ ROUTE = "/manageUsers"
 END_POINT = "manage-users"
 
 # NESTED SCHEMA FIELDS
+user_info_data = {
+    "id":fields.Integer,
+    "user_id":fields.Integer,
+    "email":fields.String,
+    "phone_number":fields.String,
+    "birthday":fields.String
+
+}
+
 user_role_data = {
     'id': fields.Integer,
     'name': fields.String,
@@ -36,7 +46,8 @@ output_fields = {
     'lock_state': fields.Boolean,
     'client_data': fields.Nested(user_client_data),
     'user_role_data': fields.Nested(user_role_data),
-    'user_login': fields.Nested(user_login_data)
+    'user_login': fields.Nested(user_login_data),
+    'user_info_data':fields.Nested(user_info_data)
 }
 
 
@@ -70,7 +81,9 @@ class ManageUsersResource(Resource):
 
             user_login.user_id = user.id
             user_login.login = json_data["user_login"]["login"]
-            user_login.password = str(base64.b64encode(bytes(json_data["user_login"]["password"], "utf-8")))
+
+            if ("password" in json_data["user_login"]):
+                user_login.password = str(base64.b64encode(bytes(json_data["user_login"]["password"], "utf-8")))
             session.add(user_login)
             session.commit()
 
@@ -79,15 +92,18 @@ class ManageUsersResource(Resource):
                 abort(400, message="Данные не найдены")
 
             user_info.user_id = user.id
-            if ("user_info" in json_data):
-                if ("phone_number" in json_data["user_info"]):
-                    user_info.phone_number = json_data["user_info"]["phone_number"]
+            if ("user_info_data" in json_data):
+                if ("phone_number" in json_data["user_info_data"]):
+                    user_info.phone_number = json_data["user_info_data"]["phone_number"]
 
-                if ("email" in json_data["user_info"]):
-                    user_info.email = json_data["user_info"]["email"]
+                if ("email" in json_data["user_info_data"]):
+                    user_info.email = json_data["user_info_data"]["email"]
 
-                if ("birthday" in json_data["user_info"]):
-                    user_info.email = json_data["user_info"]["birthday"]
+                if ("birthday" in json_data["user_info_data"]):
+                    #f = "%d.%m.%Y"
+
+                    #d = datetime.datetime.strptime(, f)
+                    user_info.birthday =json_data["user_info_data"]["birthday"]
 
 
 
@@ -100,7 +116,9 @@ class ManageUsersResource(Resource):
                 abort(400, message="Данные не найдены")
 
             login = session.query(UserLogins).filter(UserLogins.user_id == user.id).first()
+            user_info = session.query(UserInfo).filter(UserInfo.user_id == user.id).first()
             user.user_login = login
+            user.user_info_data = user_info
             return user, 201
         except Exception as e:
             session.rollback()
@@ -149,7 +167,9 @@ class ManageUsersListResource(Resource):
                 abort(400, message ="Данные не найдены")
 
             login = session.query(UserLogins).filter(UserLogins.user_id == user_entity.id).first()
-            user.user_login =login
+            user_info = session.query(UserInfo).filter(UserInfo.user_id == user.id).first()
+            user.user_login = login
+            user.user_info_data = user_info
             return user, 201
 
 
