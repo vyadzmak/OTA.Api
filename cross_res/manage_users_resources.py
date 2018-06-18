@@ -12,13 +12,25 @@ ROUTE = "/manageUsers"
 END_POINT = "manage-users"
 
 # NESTED SCHEMA FIELDS
+avatar_data_fields = {
+    'id': fields.Integer,
+    'original_file_name': fields.String,
+    'file_path': fields.String,
+    'file_size': fields.Integer,
+    'uid': fields.String,
+    'user_creator_id': fields.Integer,
+    'upload_date': fields.DateTime,
+    'thumb_file_path': fields.String,
+    'optimized_size_file_path': fields.String
+}
 user_info_data = {
     "id":fields.Integer,
     "user_id":fields.Integer,
     "email":fields.String,
     "phone_number":fields.String,
-    "birthday":fields.String
-
+    "birthday":fields.String,
+    'avatar_id':fields.Integer,
+    'avatar_data':fields.Nested(avatar_data_fields)
 }
 
 user_role_data = {
@@ -100,11 +112,10 @@ class ManageUsersResource(Resource):
                     user_info.email = json_data["user_info_data"]["email"]
 
                 if ("birthday" in json_data["user_info_data"]):
-                    #f = "%d.%m.%Y"
-
-                    #d = datetime.datetime.strptime(, f)
                     user_info.birthday =json_data["user_info_data"]["birthday"]
 
+                if ("avatar_id" in json_data["user_info_data"]):
+                    user_info.avatar_id =json_data["user_info_data"]["avatar_id"]
 
 
             session.add(user_info)

@@ -1,4 +1,4 @@
-from models.db_models.models import Users, UserLogins
+from models.db_models.models import Users, UserLogins,UserInfo
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -12,6 +12,27 @@ ROUTE ="/usersByClient"
 END_POINT = "users-by-client"
 
 # NESTED SCHEMA FIELDS
+avatar_data_fields = {
+    'id': fields.Integer,
+    'original_file_name': fields.String,
+    'file_path': fields.String,
+    'file_size': fields.Integer,
+    'uid': fields.String,
+    'user_creator_id': fields.Integer,
+    'upload_date': fields.DateTime,
+    'thumb_file_path': fields.String,
+    'optimized_size_file_path': fields.String
+}
+user_info_data = {
+    "id":fields.Integer,
+    "user_id":fields.Integer,
+    "email":fields.String,
+    "phone_number":fields.String,
+    "birthday":fields.String,
+    'avatar_id':fields.Integer,
+    'avatar_data':fields.Nested(avatar_data_fields)
+}
+
 user_role_data = {
     'id': fields.Integer,
     'name': fields.String,
@@ -32,14 +53,14 @@ user_login_data = {
 }
 # OUTPUT SCHEMA
 output_fields = {
-    'id':fields.Integer,
+    'id': fields.Integer,
     'name': fields.String,
-    'lock_state':fields.Boolean,
+    'lock_state': fields.Boolean,
     'client_data': fields.Nested(user_client_data),
     'user_role_data': fields.Nested(user_role_data),
-    'user_login':fields.Nested(user_login_data)
+    'user_login': fields.Nested(user_login_data),
+    'user_info_data':fields.Nested(user_info_data)
 }
-
 
 #API METHODS FOR SINGLE ENTITY
 class UsersByClientResource(Resource):
@@ -68,6 +89,7 @@ class UsersByClientResource(Resource):
 
             for user in users:
                 user.user_login = session.query(UserLogins).filter(UserLogins.user_id==user.id).first()
+                user.user_info_data = session.query(UserInfo).filter(UserInfo.user_id == user.id).first()
             return users
         except Exception as e:
             if (hasattr(e,'data')):

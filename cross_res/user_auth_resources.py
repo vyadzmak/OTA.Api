@@ -49,8 +49,8 @@ output_fields = {
     'user_data': fields.Nested(login_user_data),
     'orders_count':fields.Integer,
     'last_login_date':fields.DateTime,
-    'no_image_url': fields.String
-
+    'no_image_url': fields.String,
+    'no_avatar_url': fields.String
 
 }
 
@@ -108,6 +108,13 @@ class UserAuthResource(Resource):
                 return user_login
             api_url = settings.API_URL
             user_login.no_image_url=urllib.parse.urljoin(api_url, setting.value)
+
+            setting = session.query(Settings).filter(Settings.name == 'no_avatar_url').first()
+            if (not setting):
+                return user_login
+            api_url = settings.API_URL
+            user_login.no_avatar_url = urllib.parse.urljoin(api_url, setting.value)
+
             return user_login
         except Exception as e:
             if (hasattr(e,'data')):

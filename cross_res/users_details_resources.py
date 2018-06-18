@@ -1,15 +1,15 @@
-from models.db_models.models import AdminSettings, Log, Users,UserLogins, UserInfo
+from models.db_models.models import Users, UserLogins,UserInfo
 from db.db import session
+from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
+import modules.db_model_tranformer_modules.db_model_transformer_module as db_transformer
 import modules.db_help_modules.user_action_logging_module as user_action_logging
-from sqlalchemy import and_
-import base64
-import datetime
-
-# PARAMS
-ENTITY_NAME = "Route Admin Users"
-ROUTE = "/routeAdminUsers"
-END_POINT = "route-admin-users"
+import modules.image_path_converter_modules.image_path_converter as image_path_converter
+#PARAMS
+ENTITY_NAME = "Users Details"
+MODEL = Users
+ROUTE ="/userDetails"
+END_POINT = "user-details"
 
 # NESTED SCHEMA FIELDS
 avatar_data_fields = {
@@ -62,10 +62,8 @@ output_fields = {
     'user_info_data':fields.Nested(user_info_data)
 }
 
-
-
-# API METHODS FOR SINGLE ENTITY
-class RouteAdminUsersResource(Resource):
+#API METHODS FOR SINGLE ENTITY
+class UsersDetailsResource(Resource):
     def __init__(self):
         self.route = ROUTE
         self.end_point = END_POINT
@@ -74,44 +72,30 @@ class RouteAdminUsersResource(Resource):
     @marshal_with(output_fields)
     def get(self):
         try:
-            owner_client_id = 3
+
             action_type='GET'
             parser = reqparse.RequestParser()
             parser.add_argument('user_id')
+            parser.add_argument('request_user_id')
             args = parser.parse_args()
             if (len(args) == 0):
                 abort(400, message='Arguments not found')
             user_id = args['user_id']
-
+            request_user_id = args['request_user_id']
             user_action_logging.log_user_actions(ROUTE,user_id, action_type)
-
-            # check login
-            owner_users = session.query(Users).filter(Users.client_id==owner_client_id).order_by(Users.id.desc()).all()
-            for user in owner_users:
-                u_id = user.id
-                login = session.query(UserLogins).filter(UserLogins.user_id==u_id).first()
-                if not login:
-                    continue
-
-                user.user_login = login
-
-            for user in owner_users:
-                u_id = user.id
-
-                user_info = session.query(UserInfo).filter(UserInfo.user_id == user.id).first()
-
-                if not user_info:
-                    continue
-
-                user.user_info_data = user_info
-
-            if not owner_users:
+            user = session.query(Users).filter(Users.id==request_user_id).first()
+            if not user:
                 abort(400, message='Ошибка получения данных. Данные не найдены')
 
-            return owner_users
+            user.user_login = session.query(UserLogins).filter(UserLogins.user_id==user.id).first()
+            user.user_info_data = session.query(UserInfo).filter(UserInfo.user_id == user.id).first()
+            return user
+
         except Exception as e:
             if (hasattr(e,'data')):
                 if (e.data!=None and "message" in e.data):
                     abort(400,message =e.data["message"])
             abort(400, message = "Неопознанная ошибка")
+
+
 

@@ -61,6 +61,7 @@ from cross_res.city_catalog_by_area_resources import *
 from cross_res.users_by_client_resources import *
 from cross_res.order_positions_by_order_resources import *
 from cross_res.manage_users_resources import *
+from cross_res.users_details_resources import *
 #[resource_class]
 api_resources_crud =[
     AdminSettingsResource,
@@ -159,7 +160,8 @@ api_resources_cross =[
     UsersByClientResource,
     OrderPositionsByOrderResource,
     ManageUsersResource,
-    ManageUsersListResource
+    ManageUsersListResource,
+    UsersDetailsResource
 ]
 def init_single_resource(api, resource, route, endpoint):
     api.add_resource(resource, route, endpoint=endpoint)

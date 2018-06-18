@@ -427,6 +427,9 @@ class UserInfo(Base):
     phone_number = Column('phone_number', String(32))
     email = Column('email', String(32))
     birthday = Column('birthday', Date)
+    avatar_id = Column('avatar_id', ForeignKey('attachments.id'))
+
+    avatar_data = relationship('Attachments', backref="avatar_data")
 
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
