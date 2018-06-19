@@ -64,7 +64,12 @@ class RouteCatalogProductsRecommendationsResource(Resource):
             recommendations =product.product_recomendations
 
             if (not recommendations):
-                return []
+                #если у продукта нет рекомендаций то выводим весь список товаров
+                rec_products = session.query(Products).filter(Products.id != product_id).all()
+                for r_product in rec_products:
+                    r_product.is_recommend = False
+
+                return rec_products
 
             if (len(recommendations)):
                 for recommend in recommendations:
