@@ -1,4 +1,4 @@
-from models.db_models.models import UserLogins, Orders,Settings
+from models.db_models.models import UserLogins, Orders,Settings,UserInfo, Attachments
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -115,6 +115,12 @@ class UserAuthResource(Resource):
             api_url = settings.API_URL
             user_login.no_avatar_url = urllib.parse.urljoin(api_url, setting.value)
 
+            # getting avatar
+            user_info = session.query(UserInfo).filter(UserInfo.user_id == user_login.id).first()
+            if user_info:
+                attachment = session.query(Attachments).filter(Attachments.id == user_info.avatar_id).first()
+                if attachment:
+                    user_login.thumbs_avatar_path = attachment.thumb_file_path
             return user_login
         except Exception as e:
             if (hasattr(e,'data')):

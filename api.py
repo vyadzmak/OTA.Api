@@ -34,4 +34,4 @@ resources_initializer.init_api_resources(api)
 #start application
 if __name__ == '__main__':
     #u_s.get_user_roles()
-    app.run(debug=True)
+    app.run(host= '0.0.0.0')
