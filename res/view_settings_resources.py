@@ -18,7 +18,7 @@ output_fields = {
     'show_slider': fields.Boolean,
     'show_badges': fields.Boolean,
     'show_recommendations': fields.Boolean,
-    #'show_brands':fields.Boolean,
+    'show_brands':fields.Boolean,
     'show_badge_popular': fields.Boolean,
     'show_badge_discount': fields.Boolean,
     'show_badge_stock': fields.Boolean,
@@ -26,8 +26,8 @@ output_fields = {
     'slider_images':fields.List(fields.Integer),
     'recomendation_elements': fields.List(fields.Integer),
     'brand_elements': fields.List(fields.Integer),
-    'default_slider_image':fields.Integer
-
+    'default_slider_image':fields.Integer,
+    'partner_elements':fields.List(fields.Integer)
 }
 
 

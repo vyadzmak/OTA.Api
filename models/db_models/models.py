@@ -511,6 +511,8 @@ class ViewSettings(Base):
     slider_images = Column('slider_images', postgresql.ARRAY(Integer))
     recomendation_elements = Column('recomendation_elements', postgresql.ARRAY(Integer))
     brand_elements = Column('brand_elements', postgresql.ARRAY(Integer))
+    partner_elements = Column('partner_elements', postgresql.ARRAY(Integer))
+    show_brands = Column('show_brands', Boolean)
 
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)

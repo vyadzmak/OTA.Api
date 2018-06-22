@@ -1,4 +1,4 @@
-from models.db_models.models import Products
+from models.db_models.models import Products, ProductComments
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -48,7 +48,8 @@ output_fields = {
     'unit_id': fields.Integer,
     'default_image_id': fields.Integer,
     'default_image_data':fields.Nested(default_image_data_products),
-
+    'comments_count':fields.Integer,
+    'rate':fields.Float
 }
 
 
@@ -77,6 +78,22 @@ class ProductsByProductCategoryResource(Resource):
             products = session.query(Products).filter(Products.category_id==category_id).all()
             if not products:
                 abort(400, message='Ошибка получения данных. Данные не найдены')
+            for product in products:
+                comments = session.query(ProductComments).filter(ProductComments.product_id==product.id and ProductComments.is_delete==False).all()
+                product.comments_count = 0
+                product.rate = 0
+                if (not comments):
+
+                    continue
+                total_rate =0
+                comments_count=0
+                for comment in comments:
+                    total_rate+=comment.rate
+                    comments_count+=1
+
+                if (comments_count>0):
+                    product.comments_count =comments_count
+                    product.rate =round((total_rate/comments_count),2)
 
             #products.internal_products_count = len(products)
 

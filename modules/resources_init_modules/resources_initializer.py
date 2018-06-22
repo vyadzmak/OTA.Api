@@ -63,6 +63,8 @@ from cross_res.order_positions_by_order_resources import *
 from cross_res.manage_users_resources import *
 from cross_res.users_details_resources import *
 from cross_res.quick_user_registration_resources import *
+from cross_res.route_view_settings_resources import *
+
 #[resource_class]
 api_resources_crud =[
     AdminSettingsResource,
@@ -163,7 +165,8 @@ api_resources_cross =[
     ManageUsersResource,
     ManageUsersListResource,
     UsersDetailsResource,
-    QuickUserRegistrationResource
+    QuickUserRegistrationResource,
+    RouteViewSettingsResource
 ]
 def init_single_resource(api, resource, route, endpoint):
     api.add_resource(resource, route, endpoint=endpoint)
