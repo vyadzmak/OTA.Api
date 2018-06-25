@@ -1,4 +1,4 @@
-from models.db_models.models import BrandsCatalog,Attachments
+from models.db_models.models import BrandsCatalog,Attachments, Products
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -32,7 +32,9 @@ output_fields = {
     'short_description': fields.String,
     'default_image_id': fields.Integer,
     'default_image_data_brands':fields.Nested(default_image_data_brands),
-    'images_data':fields.Nested(default_image_data_brands)
+    'images_data':fields.Nested(default_image_data_brands),
+    'products_count': fields.Integer
+
 }
 
 
@@ -52,18 +54,6 @@ class BrandsResource(Resource):
             entity = session.query(MODEL).filter(MODEL.id == id).first()
             if not entity:
                 abort(404, message=ENTITY_NAME+" {} doesn't exist".format(id))
-            # api_url = settings.API_URL
-            # if hasattr(entity, 'default_image_data'):
-            #     if (entity.default_image_data != None and entity.default_image_data.file_path != None):
-            #         entity.default_image_data.file_path = urllib.parse.urljoin(api_url, entity.default_image_data.file_path)
-            # if hasattr(entity, 'default_image_data'):
-            #     if (entity.default_image_data != None and entity.default_image_data.thumb_file_path != None):
-            #         entity.default_image_data.thumb_file_path = urllib.parse.urljoin(api_url,
-            #                                                                          entity.default_image_data.thumb_file_path)
-            # if hasattr(entity, 'default_image_data'):
-            #     if (entity.default_image_data != None and entity.default_image_data.optimized_size_file_path != None):
-            #         entity.default_image_data.optimized_size_file_path = urllib.parse.urljoin(api_url,
-            #                                                                                   entity.default_image_data.optimized_size_file_path)
 
             entity.images_data =[]
 
@@ -73,6 +63,15 @@ class BrandsResource(Resource):
                         if not image:
                             continue
                         entity.images_data.append(image)
+
+            entity.products_count = 0
+
+            products = session.query(Products).filter(Products.brand_id == entity.id).all()
+
+            if (not products):
+                entity.products_count = 0
+            else:
+                entity.products_count = len(products)
             return entity
         except Exception as e:
             session.rollback()
@@ -107,20 +106,7 @@ class BrandsResource(Resource):
             session.add(entity)
             session.commit()
 
-            #api_url = settings.API_URL
-            # if hasattr(entity, 'default_image_data'):
-            #     if (entity.default_image_data != None and entity.default_image_data.file_path != None):
-            #         entity.default_image_data.file_path = urllib.parse.urljoin(api_url,
-            #                                                                    entity.default_image_data.file_path)
-            # if hasattr(entity, 'default_image_data'):
-            #     if (entity.default_image_data != None and entity.default_image_data.thumb_file_path != None):
-            #         entity.default_image_data.thumb_file_path = urllib.parse.urljoin(api_url,
-            #                                                                          entity.default_image_data.thumb_file_path)
-            # if hasattr(entity, 'default_image_data'):
-            #     if (entity.default_image_data != None and entity.default_image_data.optimized_size_file_path != None):
-            #         entity.default_image_data.optimized_size_file_path = urllib.parse.urljoin(api_url,
-            #                                                                                   entity.default_image_data.optimized_size_file_path)
-            #
+
             entity.images_data = []
 
             if (entity.images != None and len(entity.images) > 0):
@@ -130,6 +116,14 @@ class BrandsResource(Resource):
                         continue
                     entity.images_data.append(image)
 
+            entity.products_count = 0
+
+            products = session.query(Products).filter(Products.brand_id == entity.id).all()
+
+            if (not products):
+                entity.products_count = 0
+            else:
+                entity.products_count = len(products)
 
             return entity, 201
         except Exception as e:
@@ -149,7 +143,7 @@ class BrandsListResource(Resource):
     @marshal_with(output_fields)
     def get(self):
         try:
-            entities = session.query(MODEL).all()
+            entities = session.query(MODEL).order_by((MODEL.name)).all()
             # session.autocommit = False
             # session.autoflush = False
 
@@ -162,6 +156,15 @@ class BrandsListResource(Resource):
                         if not image:
                             continue
                         entity.images_data.append(image)
+
+                entity.products_count = 0
+
+                products = session.query(Products).filter(Products.brand_id == entity.id).all()
+
+                if (not products):
+                    entity.products_count = 0
+                else:
+                    entity.products_count = len(products)
             return entities
         except Exception as e:
             session.rollback()

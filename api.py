@@ -4,6 +4,8 @@ from models.app_models.json_encoder_models.json_encoder import AlchemyEncoder
 from flask_cors import CORS
 import modules.resources_init_modules.resources_initializer as resources_initializer
 from flask_basicauth import BasicAuth
+from modules.test_modules.generator_product_comments_module import generate_comments
+from modules.test_modules.test_generator_module import generate_params
 #init application
 app = Flask(__name__)
 # app.config['BASIC_AUTH_USERNAME'] = 'ota_user'
@@ -33,5 +35,6 @@ api = Api(app)
 resources_initializer.init_api_resources(api)
 #start application
 if __name__ == '__main__':
+    generate_params()
     #u_s.get_user_roles()
-    app.run(host= '0.0.0.0')
+    app.run(host= '0.0.0.0', debug=True)

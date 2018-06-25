@@ -304,7 +304,7 @@ class ProductComments(Base):
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
         self.creation_date = datetime.datetime.now(datetime.timezone.utc)
-
+        self.is_delete =False
 
 # products catalog
 class Products(Base):
@@ -335,6 +335,9 @@ class Products(Base):
 
 
     default_image_data = relationship('Attachments', backref="default_image_data_product_products")
+    product_unit_data = relationship("UnitCatalog", backref ="product_unit_data")
+    product_currency_data = relationship("CurrencyCatalog", backref ="product_currency_data")
+
     #product_category_data6 = relationship('ProductCategories', backref="product_category_data6")
 
     def __init__(self, *args):

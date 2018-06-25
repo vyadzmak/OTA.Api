@@ -1,10 +1,11 @@
-from models.db_models.models import PartnersCatalog,Attachments
+from models.db_models.models import PartnersCatalog,Attachments, Products
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
 import modules.db_model_tranformer_modules.db_model_transformer_module as db_transformer
 import models.app_models.setting_models.setting_model as settings
 import urllib.parse
+from sqlalchemy import desc
 #PARAMS
 ENTITY_NAME = "Partners Catalog"
 MODEL = PartnersCatalog
@@ -32,7 +33,8 @@ output_fields = {
     'short_description': fields.String,
     'default_image_id': fields.Integer,
     'default_image_data_partners':fields.Nested(default_image_data_partners),
-    'images_data':fields.Nested(default_image_data_partners)
+    'images_data':fields.Nested(default_image_data_partners),
+    'products_count': fields.Integer
 }
 
 
@@ -52,18 +54,6 @@ class PartnersResource(Resource):
             entity = session.query(MODEL).filter(MODEL.id == id).first()
             if not entity:
                 abort(404, message=ENTITY_NAME+" {} doesn't exist".format(id))
-            # api_url = settings.API_URL
-            # if hasattr(entity, 'default_image_data'):
-            #     if (entity.default_image_data != None and entity.default_image_data.file_path != None):
-            #         entity.default_image_data.file_path = urllib.parse.urljoin(api_url, entity.default_image_data.file_path)
-            # if hasattr(entity, 'default_image_data'):
-            #     if (entity.default_image_data != None and entity.default_image_data.thumb_file_path != None):
-            #         entity.default_image_data.thumb_file_path = urllib.parse.urljoin(api_url,
-            #                                                                          entity.default_image_data.thumb_file_path)
-            # if hasattr(entity, 'default_image_data'):
-            #     if (entity.default_image_data != None and entity.default_image_data.optimized_size_file_path != None):
-            #         entity.default_image_data.optimized_size_file_path = urllib.parse.urljoin(api_url,
-            #                                                                                   entity.default_image_data.optimized_size_file_path)
 
             entity.images_data =[]
 
@@ -73,6 +63,17 @@ class PartnersResource(Resource):
                         if not image:
                             continue
                         entity.images_data.append(image)
+
+
+            entity.products_count = 0
+
+            products =session.query(Products).filter(Products.partner_id==entity.id).all()
+
+            if (not products):
+                entity.products_count =0
+            else:
+                entity.products_count = len(products)
+
             return entity
         except Exception as e:
             session.rollback()
@@ -109,19 +110,6 @@ class PartnersResource(Resource):
             session.add(entity)
             session.commit()
 
-            # api_url = settings.API_URL
-            # if hasattr(entity, 'default_image_data'):
-            #     if (entity.default_image_data != None and entity.default_image_data.file_path != None):
-            #         entity.default_image_data.file_path = urllib.parse.urljoin(api_url,
-            #                                                                    entity.default_image_data.file_path)
-            # if hasattr(entity, 'default_image_data'):
-            #     if (entity.default_image_data != None and entity.default_image_data.thumb_file_path != None):
-            #         entity.default_image_data.thumb_file_path = urllib.parse.urljoin(api_url,
-            #                                                                          entity.default_image_data.thumb_file_path)
-            # if hasattr(entity, 'default_image_data'):
-            #     if (entity.default_image_data != None and entity.default_image_data.optimized_size_file_path != None):
-            #         entity.default_image_data.optimized_size_file_path = urllib.parse.urljoin(api_url,
-            #                                                                                   entity.default_image_data.optimized_size_file_path)
 
             entity.images_data = []
 
@@ -131,6 +119,16 @@ class PartnersResource(Resource):
                     if not image:
                         continue
                     entity.images_data.append(image)
+
+            entity.products_count = 0
+
+            products = session.query(Products).filter(Products.partner_id == entity.id).all()
+
+            if (not products):
+                entity.products_count = 0
+            else:
+                entity.prdoucts_count = len(products)
+
             return entity, 201
         except Exception as e:
             session.rollback()
@@ -152,7 +150,7 @@ class PartnersListResource(Resource):
             # session.autocommit = False
             # session.autoflush = False
 
-            entities = session.query(MODEL).all()
+            entities = session.query(MODEL).order_by((MODEL.name)).all()
             for entity in entities:
                 entity.images_data = []
 
@@ -162,6 +160,16 @@ class PartnersListResource(Resource):
                         if not image:
                             continue
                         entity.images_data.append(image)
+
+                entity.products_count = 0
+
+                products = session.query(Products).filter(Products.partner_id == entity.id).all()
+
+                if (not products):
+                    entity.products_count = 0
+                else:
+                    entity.products_count = len(products)
+
             return entities
         except Exception as e:
             session.rollback()

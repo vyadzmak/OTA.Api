@@ -4,7 +4,7 @@ from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
 import modules.db_model_tranformer_modules.db_model_transformer_module as db_transformer
 import modules.db_help_modules.user_action_logging_module as user_action_logging
-
+from sqlalchemy import desc
 #PARAMS
 ENTITY_NAME = "Products by Product Category"
 MODEL = Products
@@ -12,6 +12,22 @@ ROUTE ="/productsByProductCategory"
 END_POINT = "products-by-product-category"
 
 #NESTED SCHEMA FIELDS
+currency_data_fields = {
+    'id': fields.Integer,
+    'system_name':fields.String,
+    'display_value':fields.String,
+    'name':fields.String,
+    'is_default': fields.Boolean
+}
+
+unit_data_fields = {
+    'id': fields.Integer,
+    'system_name':fields.String,
+    'display_value':fields.String,
+    'name':fields.String,
+    'is_default': fields.Boolean
+}
+
 default_image_data_products = {
     'id': fields.Integer,
     'original_file_name': fields.String,
@@ -49,7 +65,9 @@ output_fields = {
     'default_image_id': fields.Integer,
     'default_image_data':fields.Nested(default_image_data_products),
     'comments_count':fields.Integer,
-    'rate':fields.Float
+    'rate':fields.Float,
+    'product_unit_data':fields.Nested(unit_data_fields),
+    'product_currency_data':fields.Nested(currency_data_fields)
 }
 
 
@@ -75,7 +93,8 @@ class ProductsByProductCategoryResource(Resource):
             user_id = args['user_id']
             category_id = args['category_id']
             user_action_logging.log_user_actions(ROUTE,user_id, action_type)
-            products = session.query(Products).filter(Products.category_id==category_id).all()
+            products = session.query(Products).filter(Products.category_id==category_id).order_by(desc(Products.id)).all()
+            #products = products.
             if not products:
                 abort(400, message='Ошибка получения данных. Данные не найдены')
             for product in products:
