@@ -23,7 +23,7 @@ from res.unit_catalog_resources import *
 from res.user_cart_states_resources import *
 from res.user_carts_resources import *
 from res.user_cart_positions_resources import  *
-
+from res.user_confirmation_codes_resources import *
 from res.user_info_resources import *
 from res.user_logins_resources import *
 from res.user_route_roles_resources import *
@@ -122,6 +122,9 @@ api_resources_crud =[
     AttachmentOriginalViewResource,
     AttachmentThumbsViewResource,
     AttachmentOptimizedViewResource,
+    UserConfirmationCodesResource,
+    UserConfirmationCodesListResource,
+
     UserCartStatesResource,
     UserCartStatesListResource,
     UserCartsResource,

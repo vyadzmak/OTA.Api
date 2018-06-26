@@ -15,6 +15,7 @@ END_POINT = "user-confirmation-code-check"
 
 # OUTPUT SCHEMA
 output_fields = {
+    'status_code': fields.Integer,
 
 }
 
@@ -41,12 +42,12 @@ class UserConfirmationCodeCheckResource(Resource):
             user_action_logging.log_user_actions(ROUTE,user_id, action_type)
             #products = session.query(Products).filter(Products.category_id==category_id).order_by(desc(Products.id)).all()
 
-            user_confirmation_code = session.query(UserConfirmationCodes).filter(UserConfirmationCodes==user_id).order_by(desc(UserConfirmationCodes.id)).first()
+            user_confirmation_code = session.query(UserConfirmationCodes).filter(UserConfirmationCodes.user_id==user_id).order_by(desc(UserConfirmationCodes.id)).first()
             if (not user_confirmation_code):
                 abort(400,message='Error')
 
 
-            if (user_confirmation_code!=code):
+            if (user_confirmation_code.code!=str(code)):
                 abort(400,message='Error')
 
             user = session.query(Users).filter(Users.id==user_id).first()
@@ -58,8 +59,20 @@ class UserConfirmationCodeCheckResource(Resource):
             user.lock_state = False
             session.add(user)
             session.commit()
+            response ={
+                'status_code':200
+            }
 
-            return 200, 'OK'
+            # response = object()
+            #
+            #
+            # response.status_code = type('', (), {})
+            # setattr(response,'status_code',200)
+            #
+
+            # response.status_code =200
+            # setattr(response,'status_code',200)
+            return response
         except Exception as e:
             if (hasattr(e,'data')):
                 if (e.data!=None and "message" in e.data):

@@ -151,7 +151,9 @@ class FilterProductResource(Resource):
     # filter by name
     def filter_by_name(self,name):
             try:
-                pass
+                r_name = '%'+name+'%'
+                products = session.query(Products).filter(Products.name.ilike(r_name)).all()
+                return products
             except Exception as e:
                 return None
 
@@ -176,15 +178,15 @@ class FilterProductResource(Resource):
             # session.query(Products).filter(Products.category_id==category_id).order_by(desc(Products.id)).all()
             # products = products.
 
-            if (filter_parameter==1):
+            if (str(filter_parameter)=='1'):
                 products = self.filter_by_brand(filter_value)
-            elif (filter_parameter==2):
+            elif (str(filter_parameter)=='2'):
                 products = self.filter_by_partner(filter_value)
-            elif (filter_parameter == 3):
+            elif (str(filter_parameter) == '3'):
                 products = self.filter_by_favorites(user_id)
-            elif (filter_parameter == 4):
+            elif (str(filter_parameter) == '4'):
                 products = self.filter_by_recommendations()
-            elif (filter_parameter==5):
+            elif (str(filter_parameter)=='5'):
                 products = self.filter_by_name(filter_value)
 
 
