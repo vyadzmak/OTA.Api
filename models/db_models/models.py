@@ -13,7 +13,7 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 import datetime
-
+import random
 Base = declarative_base()
 
 import modules.db_model_tranformer_modules.db_model_transformer_module as db_tranformer
@@ -247,6 +247,7 @@ class Orders(Base):
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
         self.creation_date = datetime.datetime.now(datetime.timezone.utc)
+        # self.start_counter =
         self.number = ''
         self.order_state_id = 1
 
@@ -421,6 +422,28 @@ class UserCarts(Base):
         self.creation_date = datetime.datetime.now(datetime.timezone.utc)
         self.cart_state_id = 1
 
+    # user info
+class UserConfirmationCodes(Base):
+        __tablename__ = 'user_confirmation_codes'
+        id = Column('id', Integer, primary_key=True)
+        user_id = Column('user_id', ForeignKey('users.id'))
+        code =Column('code', String(8))
+        creation_date = Column('creation_date', DateTime)
+        def __init__(self, *args):
+            db_tranformer.transform_constructor_params(self, args)
+            self.creation_date = datetime.datetime.now(datetime.timezone.utc)
+            code = random.randint(1000,9999)
+            self.code = str(code)
+
+# user favorite products
+class UserFavoriteProducts(Base):
+        __tablename__ = 'user_favorite_products'
+        id = Column('id', Integer, primary_key=True)
+        user_id = Column('user_id', ForeignKey('users.id'))
+        products_ids = Column('products_ids', postgresql.ARRAY(Integer))
+
+        def __init__(self, *args):
+            db_tranformer.transform_constructor_params(self, args)
 
 # user info
 class UserInfo(Base):

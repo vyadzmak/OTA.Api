@@ -35,7 +35,7 @@ from res.attachment_original_view_resources import *
 from res.attachment_thumbs_view_resources import *
 from res.attachment_optimized_view_resources import *
 from res.product_comments_resources import *
-
+from res.user_favorite_products_resources import *
 
 #cross resourcse
 from cross_res.user_auth_resources import *
@@ -65,6 +65,11 @@ from cross_res.users_details_resources import *
 from cross_res.quick_user_registration_resources import *
 from cross_res.route_view_settings_resources import *
 from cross_res.product_details_resources import *
+from cross_res.user_favorite_products_by_user_resources import *
+from cross_res.filter_products_resources import *
+from cross_res.orders_history_resources import *
+from cross_res.mobile_user_auth_resources import *
+from cross_res.user_confirmation_code_check_resource import *
 #[resource_class]
 api_resources_crud =[
     AdminSettingsResource,
@@ -123,6 +128,8 @@ api_resources_crud =[
     UserCartsListResource,
     UserCartPositionsResource,
     UserCartPositionsListResource,
+    UserFavoriteProductsResource,
+    UserFavoriteProductsListResource,
     UserInfoResource,
     UserInfoListResource,
     UserLoginsResource,
@@ -167,7 +174,12 @@ api_resources_cross =[
     UsersDetailsResource,
     QuickUserRegistrationResource,
     RouteViewSettingsResource,
-    ProductDetailsResource
+    ProductDetailsResource,
+    UserFavoriteProductsByUserResource,
+    FilterProductResource,
+    OrdersHistoryResource,
+    MobileUserAuthResource,
+    UserConfirmationCodeCheckResource
 ]
 def init_single_resource(api, resource, route, endpoint):
     api.add_resource(resource, route, endpoint=endpoint)

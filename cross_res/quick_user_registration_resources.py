@@ -1,4 +1,4 @@
-from models.db_models.models import Users, UserLogins, UserInfo,Clients,ClientInfo
+from models.db_models.models import Users, UserLogins, UserInfo,Clients,ClientInfo,UserConfirmationCodes
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -70,31 +70,58 @@ class QuickUserRegistrationResource(Resource):
 
     @marshal_with(output_fields)
     def post(self):
+        error_message = ""
         try:
             json_data = request.get_json(force=True)
 
+            phone_number = json_data['phone_number']
+
+            user_login = session.query(UserLogins).filter(UserLogins.login==phone_number).first()
+
+            if (user_login!=None):
+                error_message = "Пользователь с таким номером уже существует системе!"
+                abort(400, message="")
+
+
+            clients_args ={}
+            clients_args["name"] = json_data["client_name"]
+            clients_args["client_type_id"] = 3
+            client_entity = Clients(clients_args)
+            session.add(client_entity)
+            session.commit()
+
+            client_id = client_entity.id
+
+
 
             users_args ={}
-            users_args['name']=json_data["user_data"]["name"]
-            users_args['client_id']=json_data["client_data"]["id"]
-            users_args['user_role_id']=json_data["user_role_data"]["id"]
-            users_args['lock_state']=False
+            users_args['name']=json_data["user_name"]
+            users_args['client_id']=client_id
+            users_args['user_role_id']=4
+            users_args['lock_state']=True
             user_entity = Users(users_args)
             session.add(user_entity)
             session.commit()
 
             user_login_args = {}
             user_login_args['user_id'] = user_entity.id
-            user_login_args['login'] = json_data["user_login"]["login"]
-            user_login_args['password'] = str(base64.b64encode(bytes(json_data["user_login"]["password"],"utf-8")))
+            user_login_args['login'] = phone_number
+            user_login_args['password'] = str(base64.b64encode(bytes(json_data["password"],"utf-8")))
             user_login_entity = UserLogins(user_login_args)
             session.add(user_login_entity)
             session.commit()
 
             user_info_args = {}
             user_info_args['user_id'] = user_entity.id
+            user_info_args['phone_number'] ='+'+phone_number
             user_info_entity = UserInfo(user_info_args)
             session.add(user_info_entity)
+            session.commit()
+
+            user_confirmation_code_args = {}
+            user_confirmation_code_args['user_id'] = user_entity.id
+            user_confirmation_entity = UserConfirmationCodes(user_confirmation_code_args)
+            session.add(user_confirmation_entity)
             session.commit()
 
             user = session.query(Users).filter(Users.id==user_entity.id).first()
@@ -111,4 +138,4 @@ class QuickUserRegistrationResource(Resource):
 
         except Exception as e:
             session.rollback()
-            abort(400, message="Error while adding record " + ENTITY_NAME)
+            abort(400, message=error_message, code=400)
