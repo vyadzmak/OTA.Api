@@ -12,7 +12,18 @@ ROUTE = "/routeCatalogProductsGeneral"
 END_POINT = "route-catalog-products-general"
 
 # NESTED SCHEMA FIELDS
-
+#NESTED SCHEMA FIELDS
+default_image_data_products = {
+    'id': fields.Integer,
+    'original_file_name': fields.String,
+    'file_path': fields.String,
+    'file_size': fields.Integer,
+    'uid': fields.String,
+    'user_creator_id': fields.Integer,
+    'upload_date': fields.DateTime,
+    'thumb_file_path': fields.String,
+    'optimized_size_file_path': fields.String
+}
 # OUTPUT SCHEMA
 output_fields = {
     'id': fields.Integer,
@@ -36,7 +47,9 @@ output_fields = {
     'currency_id': fields.Integer,
     'unit_id': fields.Integer,
     'gallery_images': fields.List(fields.Integer),
-    'product_recomendations': fields.List(fields.Integer)
+    'product_recomendations': fields.List(fields.Integer),
+    'default_image_id': fields.Integer,
+    'default_image_data':fields.Nested(default_image_data_products),
 }
 
 
