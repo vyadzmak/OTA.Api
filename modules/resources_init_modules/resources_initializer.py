@@ -73,6 +73,9 @@ from cross_res.user_confirmation_code_check_resource import *
 from cross_res.user_cart_details_resources import *
 from cross_res.add_cart_position_to_cart_resources import *
 from cross_res.manage_user_cart_details_resources import *
+from  cross_res.make_user_order_resources import *
+from cross_res.manage_favorite_products import *
+from cross_res.user_profile_resources import *
 #[resource_class]
 api_resources_crud =[
     AdminSettingsResource,
@@ -188,7 +191,10 @@ api_resources_cross =[
     UserConfirmationCodeCheckResource,
     UserCartDetailsResource,
     AddCartPositionToCartResource,
-    ManageUserCartDetailsResource
+    ManageUserCartDetailsResource,
+    MakeUserOrderResource,
+    ManageFavoriteProductsResource,
+    UserProfileResource
 ]
 def init_single_resource(api, resource, route, endpoint):
     api.add_resource(resource, route, endpoint=endpoint)

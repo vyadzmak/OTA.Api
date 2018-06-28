@@ -96,6 +96,24 @@ class FilterProductResource(Resource):
         except Exception as e:
             return None
 
+            # filter by discount
+    def filter_by_discount(self):
+                try:
+                    products = session.query(Products).filter(Products.is_discount_product==True).all()
+                    return products
+                    pass
+                except Exception as e:
+                    return None
+
+                    # filter by discount
+    def filter_by_stock(self):
+                        try:
+                            products = session.query(Products).filter(Products.is_stock_product == True).all()
+                            return products
+                            pass
+                        except Exception as e:
+                            return None
+
     # filter by favorites
     def filter_by_favorites(self, user_id):
             try:
@@ -174,7 +192,7 @@ class FilterProductResource(Resource):
             filter_value = args['filter_value']
             user_action_logging.log_user_actions(ROUTE, user_id, action_type)
             products = []
-            # filter paramenters 1 - brands, 2 -partners, 3 - favorites, 4 - recommends , 5 - filter by name
+            # filter paramenters 1 - brands, 2 -partners, 3 - favorites, 4 - recommends , 5 - filter by name, 6 - discount, 7 -stock
             # session.query(Products).filter(Products.category_id==category_id).order_by(desc(Products.id)).all()
             # products = products.
 
@@ -188,11 +206,10 @@ class FilterProductResource(Resource):
                 products = self.filter_by_recommendations()
             elif (str(filter_parameter)=='5'):
                 products = self.filter_by_name(filter_value)
-
-
-
-
-
+            elif (str(filter_parameter)=='6'):
+                products = self.filter_by_discount()
+            elif (str(filter_parameter) == '7'):
+                products = self.filter_by_stock()
 
             if not products:
                 abort(400, message='Ошибка получения данных. Данные не найдены')

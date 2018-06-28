@@ -239,14 +239,14 @@ class MobileUserAuthResource(Resource):
             setting = session.query(Settings).filter(Settings.name=='no_image_url').first()
             if (not setting):
                 return user_login
-            api_url = settings.API_URL
-            user_login.no_image_url=urllib.parse.urljoin(api_url, setting.value)
+            # api_url = settings.API_URL
+            user_login.no_image_url=setting.value
 
             setting = session.query(Settings).filter(Settings.name == 'no_avatar_url').first()
             if (not setting):
                 return user_login
-            api_url = settings.API_URL
-            user_login.no_avatar_url = urllib.parse.urljoin(api_url, setting.value)
+            # api_url = settings.API_URL
+            user_login.no_avatar_url =setting.value
 
             # getting avatar
             user_info = session.query(UserInfo).filter(UserInfo.user_id == user_login.id).first()
