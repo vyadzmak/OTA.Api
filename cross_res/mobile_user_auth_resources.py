@@ -1,4 +1,4 @@
-from models.db_models.models import UserLogins, Orders,Settings,UserInfo, Attachments,ViewSettings, Products, BrandsCatalog, PartnersCatalog
+from models.db_models.models import UserLogins, Orders,Settings,UserInfo, Attachments,ViewSettings, Products, BrandsCatalog, PartnersCatalog, UserFavoriteProducts
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -164,6 +164,12 @@ login_user_data = {
     'name': fields.String,
     'client_data': fields.Nested(login_user_client_data),
 }
+
+user_favorites_products_fields ={
+    'id':fields.Integer,
+    'products_ids':fields.List(fields.Integer)
+}
+
 # OUTPUT SCHEMA
 output_fields = {
     'id': fields.Integer,
@@ -173,7 +179,8 @@ output_fields = {
     'last_login_date':fields.DateTime,
     'no_image_url': fields.String,
     'no_avatar_url': fields.String,
-    'view_settings':fields.Nested(view_settings_fields)
+    'view_settings':fields.Nested(view_settings_fields),
+    'user_favorites_products':fields.Nested(user_favorites_products_fields)
 }
 
 
@@ -211,7 +218,7 @@ class MobileUserAuthResource(Resource):
                 abort(400, message='Ошибка авторизации. Пользователь с такими данными не найден!')
 
             if (user_login.user_data.lock_state==True):
-                error_message='Ошибка авторизации. Пользователь с такими данными не найден!'
+                error_message='Ошибка авторизации. Пользователь заблокирован или не активирован!'
                 abort(400, message='Ошибка авторизации. Пользователь заблокирован!')
 
             if (user_login.user_data.client_data.lock_state==True):
@@ -310,7 +317,7 @@ class MobileUserAuthResource(Resource):
 
             user_login.view_settings =view_settings
 
-
+            user_login.user_favorites_products = session.query(UserFavoriteProducts).filter(UserFavoriteProducts.user_id==user_login.user_data.id).first()
 
             return user_login
         except Exception as e:

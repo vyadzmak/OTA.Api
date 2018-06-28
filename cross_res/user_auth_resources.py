@@ -50,7 +50,8 @@ output_fields = {
     'orders_count':fields.Integer,
     'last_login_date':fields.DateTime,
     'no_image_url': fields.String,
-    'no_avatar_url': fields.String
+    'no_avatar_url': fields.String,
+    'thumbs_avatar_path': fields.String
 
 }
 
@@ -106,14 +107,14 @@ class UserAuthResource(Resource):
             setting = session.query(Settings).filter(Settings.name=='no_image_url').first()
             if (not setting):
                 return user_login
-            api_url = settings.API_URL
-            user_login.no_image_url=urllib.parse.urljoin(api_url, setting.value)
+            #api_url = settings.API_URL
+            user_login.no_image_url=setting.value
 
             setting = session.query(Settings).filter(Settings.name == 'no_avatar_url').first()
             if (not setting):
                 return user_login
-            api_url = settings.API_URL
-            user_login.no_avatar_url = urllib.parse.urljoin(api_url, setting.value)
+            #api_url = settings.API_URL
+            user_login.no_avatar_url = setting.value
 
             # getting avatar
             user_info = session.query(UserInfo).filter(UserInfo.user_id == user_login.id).first()
@@ -121,6 +122,9 @@ class UserAuthResource(Resource):
                 attachment = session.query(Attachments).filter(Attachments.id == user_info.avatar_id).first()
                 if attachment:
                     user_login.thumbs_avatar_path = attachment.thumb_file_path
+
+
+
             return user_login
         except Exception as e:
             if (hasattr(e,'data')):

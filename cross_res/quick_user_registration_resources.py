@@ -1,4 +1,4 @@
-from models.db_models.models import Users, UserLogins, UserInfo,Clients,ClientInfo,UserConfirmationCodes
+from models.db_models.models import Users, UserLogins, UserInfo,Clients,ClientInfo,UserConfirmationCodes,UserFavoriteProducts
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -51,6 +51,18 @@ user_login_data = {
     'login': fields.String,
     'last_login_date': fields.DateTime
 }
+
+user_confirmation_code_fields ={
+    'id':fields.Integer,
+    'code':fields.String
+}
+
+user_favorites_products_fields ={
+    'id':fields.Integer,
+    'products_ids':fields.List(fields.Integer)
+}
+
+
 # OUTPUT SCHEMA
 output_fields = {
     'id': fields.Integer,
@@ -59,7 +71,9 @@ output_fields = {
     'client_data': fields.Nested(user_client_data),
     'user_role_data': fields.Nested(user_role_data),
     'user_login': fields.Nested(user_login_data),
-    'user_info_data':fields.Nested(user_info_data)
+    'user_info_data':fields.Nested(user_info_data),
+    'user_confirmation_code_data': fields.Nested(user_confirmation_code_fields),
+    'user_favorites_products': fields.Nested(user_favorites_products_fields)
 }
 # API METHODS FOR LIST ENTITIES
 class QuickUserRegistrationResource(Resource):
@@ -124,8 +138,17 @@ class QuickUserRegistrationResource(Resource):
             session.add(user_confirmation_entity)
             session.commit()
 
-            user = session.query(Users).filter(Users.id==user_entity.id).first()
+            user_favorites_args = {}
+            user_favorites_args['user_id'] = user_entity.id
+            user_favorites_args['products_ids'] =[]
+            user_favorites_entity = UserFavoriteProducts(user_favorites_args)
+            session.add(user_favorites_entity)
+            session.commit()
 
+
+            user = session.query(Users).filter(Users.id==user_entity.id).first()
+            user.user_confirmation_code_data = user_confirmation_entity
+            user.user_favorites_products = user_favorites_entity
             if (not user):
                 abort(400, message ="Данные не найдены")
 
