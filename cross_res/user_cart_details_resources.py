@@ -158,6 +158,7 @@ class UserCartDetailsResource(Resource):
 
                 else:
                     total_sum += round(product.amount * count, 2)
+                    total_sum_without_discount += round(product.amount * count, 2)
 
             economy_delta = total_sum_without_discount - amount_sum
             economy_percent = round(100 * (economy_delta / total_sum_without_discount), 2)

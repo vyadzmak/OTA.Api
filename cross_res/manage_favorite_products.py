@@ -17,7 +17,9 @@ END_POINT = "manage-favorite-products"
 
 # OUTPUT SCHEMA
 output_fields = {
-    'status_code': fields.Integer,
+
+    'id': fields.Integer,
+    'products_ids':fields.List(fields.Integer)
 
 }
 
@@ -62,7 +64,7 @@ class ManageFavoriteProductsResource(Resource):
                 favorite_products_entity = UserFavoriteProducts(favorite_products_args)
                 session.add(favorite_products_entity)
                 session.commit()
-                return response
+                return favorite_products
 
             favorite_products_ids = favorite_products.products_ids
             if (value==True):
@@ -97,7 +99,7 @@ class ManageFavoriteProductsResource(Resource):
 
 
 
-            return response
+            return favorite_products
         except Exception as e:
             if (hasattr(e,'data')):
                 if (e.data!=None and "message" in e.data):

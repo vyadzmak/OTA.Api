@@ -118,7 +118,7 @@ class UserAuthResource(Resource):
 
             # getting avatar
             user_info = session.query(UserInfo).filter(UserInfo.user_id == user_login.id).first()
-            if user_info:
+            if user_info!=None:
                 attachment = session.query(Attachments).filter(Attachments.id == user_info.avatar_id).first()
                 if attachment:
                     user_login.thumbs_avatar_path = attachment.thumb_file_path

@@ -123,19 +123,19 @@ class FilterProductResource(Resource):
                 if (not user_favorite_products):
                     abort(400, message="Not found favorite products")
 
-                if (not user_favorite_products.product_ids):
+                if (not user_favorite_products):
                     abort(400, message="Not found favorite products")
 
                 products = []
 
                 for favorite_product_id in user_favorite_products.products_ids:
-                    product = session.query(Products).filter(Products.id == favorite_product_id).filter()
+                    product = session.query(Products).filter(Products.id == favorite_product_id).first()
 
                     if (not product):
                         continue
 
                     products.append(product)
-                pass
+                return products
             except Exception as e:
                 return None
 

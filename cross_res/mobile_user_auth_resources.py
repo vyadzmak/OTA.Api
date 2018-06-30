@@ -180,7 +180,8 @@ output_fields = {
     'no_image_url': fields.String,
     'no_avatar_url': fields.String,
     'view_settings':fields.Nested(view_settings_fields),
-    'user_favorites_products':fields.Nested(user_favorites_products_fields)
+    'user_favorites_products':fields.Nested(user_favorites_products_fields),
+    'avatar_url':fields.String
 }
 
 
@@ -250,10 +251,10 @@ class MobileUserAuthResource(Resource):
 
             # getting avatar
             user_info = session.query(UserInfo).filter(UserInfo.user_id == user_login.id).first()
-            if user_info:
+            if user_info!=None:
                 attachment = session.query(Attachments).filter(Attachments.id == user_info.avatar_id).first()
                 if attachment:
-                    user_login.thumbs_avatar_path = attachment.thumb_file_path
+                    user_login.avatar_url = attachment.thumb_file_path
 
             view_settings = session.query(ViewSettings).first()
 

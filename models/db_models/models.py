@@ -106,7 +106,7 @@ class ClientAddresses(Base):
     related_clients = relationship('Clients', backref="client_addresses_data")
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
-
+        self.confirmed = False
 
 # client info
 class ClientInfo(Base):

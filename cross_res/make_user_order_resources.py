@@ -35,7 +35,8 @@ class MakeUserOrderResource(Resource):
             user_cart_id = json_data['user_cart_id']
             address_id = json_data['client_address_id']
             description = json_data['description']
-
+            if (description==''):
+                description = '-'
             user_cart = session.query(UserCarts).filter(UserCarts.id==user_cart_id).first()
 
 
@@ -77,7 +78,7 @@ class MakeUserOrderResource(Resource):
 
                 else:
                     total_sum += round(product.amount * count, 2)
-
+                    total_sum_without_discount += round(product.amount *count, 2)
             economy_delta = total_sum_without_discount - amount_sum
             economy_percent = round(100 * (economy_delta / total_sum_without_discount), 2)
 
@@ -91,7 +92,7 @@ class MakeUserOrderResource(Resource):
             order_args["total_amount"] = total_sum
             order_args["client_address_id"] = address_id
             order_args["currency_id"] = currency_id
-            order_args["descrition"] = description
+            order_args["description"] = description
             order_entity = Orders(order_args)
             session.add(order_entity)
             session.commit()
@@ -111,7 +112,7 @@ class MakeUserOrderResource(Resource):
                 order_position_args["order_id"] = order_entity.id
                 order_position_args["product_id"] = cart_position.product_id
                 order_position_args["count"] = cart_position.count
-                order_position_args["description"] = cart_position.description
+                order_position_args["description"] = '-'
                 order_position_args["order_position_state_id"] =1
                 order_position_args["need_invoice"] =cart_position.need_invoice
 
@@ -126,7 +127,7 @@ class MakeUserOrderResource(Resource):
 
                 else:
                     total_amount = round(product.amount*cart_position.count,2)
-
+                    total_sum_without_discount += round(product.amount *cart_position.count, 2)
                 order_position_args["total_amount"] =total_amount
 
                 order_positions_entity = OrderPositions(order_position_args)

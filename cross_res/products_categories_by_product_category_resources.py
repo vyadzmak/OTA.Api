@@ -115,8 +115,8 @@ class ProductsCategoriesByProductCategoryResource(Resource):
                 if (e.data!=None and "message" in e.data):
                     abort(400,message =e.data["message"])
             abort(400, message = "Неопознанная ошибка")
-        finally:
-            pass
-            #session.rollback()
+        # finally:
+        #     pass
+        #     #session.rollback()
 
 
