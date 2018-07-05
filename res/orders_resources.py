@@ -80,7 +80,10 @@ output_fields = {
     'client_address_data':fields.Nested(client_address_data_fields),
     'order_state_data':fields.Nested(order_state_data_fields),
     'order_user_data': fields.Nested(order_user_data_fields),
-    'order_executor_data': fields.Nested(order_user_data_fields)
+    'order_executor_data': fields.Nested(order_user_data_fields),
+    'display_creation_date': fields.String,
+    'display_processed_date': fields.String,
+    'display_execute_date': fields.String,
 }
 
 
@@ -100,6 +103,13 @@ class OrdersResource(Resource):
         entity.order_user_data =session.query(Users).filter(Users.id==entity.user_id).first()
         if (entity.executor_id!=None):
             entity.order_executor_data =session.query(Users).filter(Users.id==entity.executor_id).first()
+
+        entity.display_creation_date = entity.creation_date.strftime("%Y-%m-%d %H:%M")
+        if (entity.processed_date != None):
+            entity.display_processed_date = entity.processed_date.strftime("%Y-%m-%d %H:%M")
+
+        if (entity.execute_date != None):
+            entity.display_execute_date = entity.execute_date.strftime("%Y-%m-%d %H:%M")
 
         return entity
 

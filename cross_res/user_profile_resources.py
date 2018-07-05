@@ -115,29 +115,8 @@ class UserProfileResource(Resource):
                 abort(400, message='Arguments not found')
             user_id = args['user_id']
 
-
-
             # check login
             user_login = session.query(UserLogins).filter(UserLogins.user_id==user_id).first()
-
-            if not user_login:
-                error_message='Ошибка авторизации. Пользователь с такими данными не найден!'
-                abort(400, message='Ошибка авторизации. Пользователь с такими данными не найден!')
-
-            if (user_login.user_data.lock_state==True):
-                error_message='Ошибка авторизации. Пользователь заблокирован или не активирован!'
-                abort(400, message='Ошибка авторизации. Пользователь заблокирован!')
-
-            if (user_login.user_data.client_data.lock_state==True):
-                error_message='Ошибка авторизации. Пользователь с такими данными не найден!'
-                abort(400, message='Ошибка авторизации. Клиент (компания) заблокирован!')
-
-            user_login.last_login_date =datetime.datetime.now(datetime.timezone.utc)
-            session.add(user_login)
-            session.commit()
-            # get to additional params
-
-
 
             #no image url
             setting = session.query(Settings).filter(Settings.name=='no_image_url').first()
@@ -166,6 +145,14 @@ class UserProfileResource(Resource):
             user_login.user_data.client_data.client_addresses = addresses
 
             client_info = session.query(ClientInfo).filter(ClientInfo.client_id == client_id).first()
+
+            if (not client_info):
+                client_info_args = {}
+                client_info_args["client_id"] = client_id
+                client_info_entity = ClientInfo(client_info_args)
+                session.add(client_info_entity)
+                session.commit()
+                client_info = client_info_entity
             user_login.user_data.client_data.client_info = client_info
 
             return user_login

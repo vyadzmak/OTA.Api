@@ -106,7 +106,11 @@ class QuickUserRegistrationResource(Resource):
 
             client_id = client_entity.id
 
-
+            client_info_args ={}
+            client_info_args["client_id"] = client_id
+            client_info_entity = ClientInfo(client_info_args)
+            session.add(client_info_entity)
+            session.commit()
 
             users_args ={}
             users_args['name']=json_data["user_name"]

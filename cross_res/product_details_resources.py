@@ -162,41 +162,43 @@ class ProductDetailsResource(Resource):
 
                     # products.internal_products_count = len(products)
             attachments = []
+            if (product.gallery_images!=None):
+                for a_id in product.gallery_images:
+                    attachment = session.query(Attachments).filter(Attachments.id == a_id).first()
+                    if (attachment != None):
+                        attachments.append(attachment)
 
-            for a_id in product.gallery_images:
-                attachment = session.query(Attachments).filter(Attachments.id == a_id).first()
-                if (attachment != None):
-                    attachments.append(attachment)
-
-            product.gallery_images_data = attachments
+                product.gallery_images_data = attachments
 
             recommendations = []
 
-            for p_id in product.product_recomendations:
-                recommended_product = session.query(Products).filter(Products.id == p_id).first()
-                if (recommended_product != None):
-                    rec_comments = session.query(ProductComments).filter(ProductComments.product_id
-                                                                         == recommended_product.id and ProductComments.is_delete ==
-                                                                         False).all()
-                    recommended_product.comments_count = 0
-                    recommended_product.rate = 0
-                    if (rec_comments != None):
-                        rec_total_rate = 0
-                        rec_comments_count = 0
-                        for rec_comment in rec_comments:
-                            rec_total_rate += rec_comment.rate
-                            rec_comments_count += 1
+            if (product.product_recomendations!=None):
+                for p_id in product.product_recomendations:
+                    recommended_product = session.query(Products).filter(Products.id == p_id).first()
+                    if (recommended_product != None):
+                        rec_comments = session.query(ProductComments).filter(ProductComments.product_id
+                                                                             == recommended_product.id and ProductComments.is_delete ==
+                                                                             False).all()
+                        recommended_product.comments_count = 0
+                        recommended_product.rate = 0
+                        if (rec_comments != None):
+                            rec_total_rate = 0
+                            rec_comments_count = 0
+                            for rec_comment in rec_comments:
+                                rec_total_rate += rec_comment.rate
+                                rec_comments_count += 1
 
-                        if (rec_comments_count > 0):
-                            recommended_product.comments_count = rec_comments_count
-                            recommended_product.rate = round((rec_total_rate / rec_comments_count), 2)
-                recommendations.append(recommended_product)
+                            if (rec_comments_count > 0):
+                                recommended_product.comments_count = rec_comments_count
+                                recommended_product.rate = round((rec_total_rate / rec_comments_count), 2)
+                    recommendations.append(recommended_product)
 
             product.product_recomendations_data = recommendations
 
             return product
 
         except Exception as e:
+            abort(400, message="Product details Error")
             if (hasattr(e, 'data')):
                 if (e.data != None and "message" in e.data):
                     abort(400, message=e.data["message"])

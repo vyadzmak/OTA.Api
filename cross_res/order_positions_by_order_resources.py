@@ -5,6 +5,7 @@ import modules.db_help_modules.user_action_logging_module as user_action_logging
 from sqlalchemy import and_
 import base64
 import datetime
+from sqlalchemy import desc
 
 # PARAMS
 ENTITY_NAME = "Order Positions By Order"
@@ -77,7 +78,7 @@ class OrderPositionsByOrderResource(Resource):
             user_id = args['user_id']
             order_id = int(args['order_id'])
             user_action_logging.log_user_actions(ROUTE,user_id, action_type)
-            orderPositions = session.query(OrderPositions).filter(OrderPositions.order_id==order_id).all()
+            orderPositions = session.query(OrderPositions).filter(OrderPositions.order_id==order_id).order_by(desc(OrderPositions.id)).all()
 
             if not orderPositions:
                 return []

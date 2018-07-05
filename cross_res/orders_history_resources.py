@@ -5,6 +5,7 @@ import modules.db_help_modules.user_action_logging_module as user_action_logging
 from sqlalchemy import and_
 import base64
 import datetime
+from sqlalchemy import desc
 
 # PARAMS
 ENTITY_NAME = "Orders History"
@@ -81,7 +82,11 @@ output_fields = {
     'client_address_data':fields.Nested(client_address_data_fields),
     'order_state_data':fields.Nested(order_state_data_fields),
     'order_user_data': fields.Nested(order_user_data_fields),
-    'order_executor_data': fields.Nested(order_user_data_fields)
+    'order_executor_data': fields.Nested(order_user_data_fields),
+    'display_creation_date': fields.String,
+    'display_processed_date': fields.String,
+    'display_execute_date': fields.String,
+
 }
 
 
@@ -110,9 +115,16 @@ class OrdersHistoryResource(Resource):
             # check login
 
 
-            orders = session.query(Orders).filter(Orders.user_id==user_id).all()
+            orders = session.query(Orders).filter(Orders.user_id==user_id).order_by(desc(Orders.id)).all()
 
             for entity in orders:
+                entity.display_creation_date = entity.creation_date.strftime("%Y-%m-%d %H:%M")
+                if (entity.processed_date != None):
+                    entity.display_processed_date = entity.processed_date.strftime("%Y-%m-%d %H:%M")
+
+                if (entity.execute_date != None):
+                    entity.display_execute_date = entity.execute_date.strftime("%Y-%m-%d %H:%M")
+
                 entity.order_user_data = session.query(Users).filter(Users.id == entity.user_id).first()
                 if (entity.executor_id != None):
                     entity.order_executor_data = session.query(Users).filter(Users.id == entity.executor_id).first()

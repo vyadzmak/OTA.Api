@@ -5,6 +5,7 @@ from flask_restful import Resource, fields, marshal_with, abort, reqparse
 import modules.db_model_tranformer_modules.db_model_transformer_module as db_transformer
 import modules.db_help_modules.user_action_logging_module as user_action_logging
 import modules.image_path_converter_modules.image_path_converter as image_path_converter
+from sqlalchemy import desc
 #PARAMS
 ENTITY_NAME = "Users Cart Details"
 MODEL = Users
@@ -122,7 +123,7 @@ class UserCartDetailsResource(Resource):
             if not user_cart:
                 abort(400, message='Ошибка получения данных. Данные не найдены')
 
-            user_cart_positions = session.query(UserCartPositions).filter(UserCartPositions.user_cart_id==user_cart.id).all()
+            user_cart_positions = session.query(UserCartPositions).filter(UserCartPositions.user_cart_id==user_cart.id).order_by(desc(UserCartPositions.id)).all()
             # for cart_position in cart_positions:
             #     cart_position
 

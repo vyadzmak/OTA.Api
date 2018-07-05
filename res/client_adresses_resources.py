@@ -37,12 +37,44 @@ output_fields = {
 }
 
 
+def check_default_address(entity):
+    try:
+        client_id = entity.client_id
+        is_default = entity.is_default
+        id = entity.id
+
+        client_addresses = session.query(ClientAddresses).filter(ClientAddresses.client_id == client_id).all()
+
+        if (len(client_addresses) == 1):
+            for client_address in client_addresses:
+                client_address.is_default = True
+                session.add(client_address)
+                session.commit()
+                return
+
+        if (is_default == False):
+            return
+
+        for client_address in client_addresses:
+            if (client_address.id == id):
+                client_address.is_default = True
+            else:
+                client_address.is_default = False
+            session.add(client_address)
+            session.commit()
+
+        pass
+    except Exception as e:
+        pass
+
 #API METHODS FOR SINGLE ENTITY
 class ClientAddressesResource(Resource):
     def __init__(self):
         self.route = ROUTE+'/<int:id>'
         self.end_point = END_POINT
         pass
+
+
 
     @marshal_with(output_fields)
     def get(self, id):
@@ -73,6 +105,7 @@ class ClientAddressesResource(Resource):
             db_transformer.transform_update_params(entity,json_data)
             session.add(entity)
             session.commit()
+            check_default_address(entity)
             return entity, 201
         except Exception as e:
             session.rollback()
@@ -97,6 +130,7 @@ class ClientAddressesListResource(Resource):
             entity = MODEL(json_data)
             session.add(entity)
             session.commit()
+            check_default_address(entity)
             return entity, 201
         except Exception as e:
             session.rollback()
