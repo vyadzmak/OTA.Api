@@ -94,6 +94,7 @@ output_fields = {
     'economy_delta': fields.Float,
     'economy_percent': fields.Float,
     'cart_positions': fields.Nested(user_cart_positions_fields),
+    'bonuses_amount': fields.Float
 
 }
 
@@ -133,6 +134,7 @@ class UserCartDetailsResource(Resource):
 
             amount_sum = 0
             currency_id = -1
+            bonuses_amount =0
             for cart_position in user_cart_positions:
                 count = cart_position.count
 
@@ -143,6 +145,13 @@ class UserCartDetailsResource(Resource):
                 if (not product):
                     continue
                 single_amount = 0
+
+                if (product.bonus_percent!=None and product.bonus_percent!=0 ):
+                    bonus_value =round(product.amount*(product.bonus_percent/100),2)
+                    bonuses_amount+=bonus_value
+
+
+
                 if (product.is_discount_product == True):
                     discount_amount = product.discount_amount
 
@@ -171,7 +180,7 @@ class UserCartDetailsResource(Resource):
             user_cart.economy_percent = economy_percent
             user_cart.products_count = len(user_cart_positions)
             user_cart.currency_data = session.query(CurrencyCatalog).filter(CurrencyCatalog.id == currency_id).first()
-
+            user_cart.bonuses_amount =bonuses_amount
             return user_cart
 
         except Exception as e:

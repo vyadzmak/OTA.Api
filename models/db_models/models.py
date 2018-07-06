@@ -357,6 +357,8 @@ class Products(Base):
 
         ]
         self.stock_text =''
+        self.bonus_percent =0
+        self.recommended_amount =0
 
 # settings
 class Settings(Base):

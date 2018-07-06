@@ -134,7 +134,7 @@ api_resources_crud =[
     AttachmentThumbsViewResource,
     AttachmentOptimizedViewResource,
 
-    UserBonuses,
+    UserBonusesResource,
     UserConfirmationCodesResource,
     UserConfirmationCodesListResource,
 

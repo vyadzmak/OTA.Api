@@ -1,4 +1,4 @@
-from models.db_models.models import UserCarts,UserCartPositions,Products,CurrencyCatalog, Orders, OrderPositions
+from models.db_models.models import UserBonuses, UserCarts,UserCartPositions,Products,CurrencyCatalog, Orders, OrderPositions
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -52,6 +52,7 @@ class MakeUserOrderResource(Resource):
 
             amount_sum = 0
             currency_id = -1
+            bonuses_amount = 0
             for cart_position in user_cart_positions:
                 count = cart_position.count
 
@@ -61,6 +62,11 @@ class MakeUserOrderResource(Resource):
 
                 if (not product):
                     continue
+                if (product.bonus_percent!=None and product.bonus_percent!=0 ):
+                    bonus_value =round(product.amount*(product.bonus_percent/100),2)
+                    bonuses_amount+=bonus_value
+
+
                 single_amount = 0
                 if (product.is_discount_product == True):
                     discount_amount = product.discount_amount
@@ -140,6 +146,13 @@ class MakeUserOrderResource(Resource):
                 session.add(user_cart)
                 session.commit()
 
+            bonuses_args = {}
+            bonuses_args["user_id"] = user_cart.user_id
+            bonuses_args["order_id"] = order_entity.id
+            bonuses_args["amount"] = bonuses_amount
+            bonuses_entity = UserBonuses(bonuses_args)
+            session.add(bonuses_entity)
+            session.commit()
 
             response = {
                 'status_code': 200
