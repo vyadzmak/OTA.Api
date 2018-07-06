@@ -50,6 +50,8 @@ output_fields = {
     'product_recomendations': fields.List(fields.Integer),
     'default_image_id': fields.Integer,
     'default_image_data':fields.Nested(default_image_data_products),
+    'recommended_amount':fields.Float,
+    'bonus_percent':fields.Float
 }
 
 

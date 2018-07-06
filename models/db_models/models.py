@@ -381,6 +381,20 @@ class UnitCatalog(Base):
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
 
+    # user carts
+class UserBonuses(Base):
+        __tablename__ = 'user_bonuses'
+        id = Column('id', Integer, primary_key=True)
+        user_id = Column('user_id', ForeignKey('users.id'))
+        order_id = Column('order_id', ForeignKey('orders.id'))
+        creation_date = Column('creation_date', DateTime)
+        state = Column('state', Boolean)
+        amount = Column('amount', Float)
+
+        def __init__(self, *args):
+            db_tranformer.transform_constructor_params(self, args)
+            self.creation_date = datetime.datetime.now(datetime.timezone.utc)
+            self.state = True
 
 # user cart positions
 class UserCartPositions(Base):

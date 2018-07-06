@@ -36,7 +36,7 @@ from res.attachment_thumbs_view_resources import *
 from res.attachment_optimized_view_resources import *
 from res.product_comments_resources import *
 from res.user_favorite_products_resources import *
-
+from res.user_bonuses_resources import *
 #cross resourcse
 from cross_res.user_auth_resources import *
 from cross_res.route_admin_general_resources import *
@@ -133,6 +133,8 @@ api_resources_crud =[
     AttachmentOriginalViewResource,
     AttachmentThumbsViewResource,
     AttachmentOptimizedViewResource,
+
+    UserBonuses,
     UserConfirmationCodesResource,
     UserConfirmationCodesListResource,
 
