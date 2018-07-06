@@ -333,6 +333,8 @@ class Products(Base):
     gallery_images = Column('gallery_images', postgresql.ARRAY(Integer))
     product_recomendations = Column('product_recomendations', postgresql.ARRAY(Integer))
     default_image_id = Column('default_image_id', ForeignKey('attachments.id'))
+    bonus_percent = Column('bonus_percent', Float)
+    recommended_amount = Column('recommended_amount', Float)
 
 
     default_image_data = relationship('Attachments', backref="default_image_data_product_products")

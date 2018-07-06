@@ -67,7 +67,10 @@ output_fields = {
     'comments_count':fields.Integer,
     'rate':fields.Float,
     'product_unit_data':fields.Nested(unit_data_fields),
-    'product_currency_data':fields.Nested(currency_data_fields)
+    'product_currency_data':fields.Nested(currency_data_fields),
+    'recommended_amount':fields.Float,
+    'bonus_percent':fields.Float
+
 }
 
 

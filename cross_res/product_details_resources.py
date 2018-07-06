@@ -113,7 +113,9 @@ output_fields = {
     'product_recomendations': fields.List(fields.Integer),
 
     'gallery_images_data': fields.Nested(gallery_image_data_fields),
-    'product_recomendations_data': fields.Nested(recommendations_data_fields)
+    'product_recomendations_data': fields.Nested(recommendations_data_fields),
+    'recommended_amount':fields.Float,
+    'bonus_percent':fields.Float
 }
 
 
