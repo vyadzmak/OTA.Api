@@ -17,10 +17,13 @@ def transform_constructor_params(model, args):
 def transform_update_params(model, args):
     try:
         for key in args:
-            s_key = key
-            s_value = args[key]
-            if hasattr(model, s_key):
-                setattr(model, s_key, s_value)
+            try:
+                s_key = key
+                s_value = args[key]
+                if hasattr(model, s_key):
+                   setattr(model, s_key, s_value)
+            except Exception as e:
+                pass
     except Exception as e:
         pass
 
