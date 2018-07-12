@@ -1,10 +1,11 @@
-from models.db_models.models import Users, UserLogins,UserInfo,UserCarts,UserCartPositions,Products,CurrencyCatalog
+from models.db_models.models import Users, UserBonuses, UserLogins,UserInfo,UserCarts,UserCartPositions,Products,CurrencyCatalog
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
 import modules.db_model_tranformer_modules.db_model_transformer_module as db_transformer
 import modules.db_help_modules.user_action_logging_module as user_action_logging
 import modules.image_path_converter_modules.image_path_converter as image_path_converter
+from sqlalchemy import desc
 #PARAMS
 ENTITY_NAME = "Manage Users Cart Details"
 MODEL = Users
@@ -77,7 +78,8 @@ user_cart_positions_fields ={
     'need_invoice': fields.Boolean,
     'description': fields.String,
     'user_cart_id':fields.Integer,
-    'user_cart_position_product_data':fields.Nested(product_data_fields)
+    'user_cart_position_product_data':fields.Nested(product_data_fields),
+    'bonus': fields.Float
 }
 
 # OUTPUT SCHEMA
@@ -93,7 +95,7 @@ output_fields = {
     'economy_delta': fields.Float,
     'economy_percent': fields.Float,
     'cart_positions': fields.Nested(user_cart_positions_fields),
-
+    'bonuses_amount':fields.Float
 }
 
 #API METHODS FOR SINGLE ENTITY
@@ -114,7 +116,7 @@ class ManageUserCartDetailsResource(Resource):
             cart_positions = json_data['cart_positions']
             # user_action_logging.log_user_actions(ROUTE, user_id, action_type)
 
-            db_cart_positions = session.query(UserCartPositions).filter(UserCartPositions.user_cart_id==user_cart_id).all()
+            db_cart_positions = session.query(UserCartPositions).filter(UserCartPositions.user_cart_id==user_cart_id).order_by(desc(UserCartPositions.id)).all()
 
             remove_cart_position_indexes =[]
             #проверяем все ли элементы корзины из реальной БД есть в той, что пришла
@@ -137,7 +139,7 @@ class ManageUserCartDetailsResource(Resource):
                 session.delete(entity)
                 session.commit()
 
-
+            total_bonuses = 0
             for position in cart_positions:
                 position_args ={}
                 position_args['id'] = position['id']
@@ -168,6 +170,7 @@ class ManageUserCartDetailsResource(Resource):
 
             amount_sum = 0
             currency_id = -1
+
             for cart_position in user_cart_positions:
                 count = cart_position.count
 
@@ -177,6 +180,15 @@ class ManageUserCartDetailsResource(Resource):
 
                 if (not product):
                     continue
+
+                cart_position.bonus =0
+                if (cart_position.count!=0):
+                    bonus =product.amount* (product.bonus_percent/100)*cart_position.count
+                    bonus = round(bonus,2)
+                    if (bonus != None):
+                        cart_position.bonus = bonus
+                        total_bonuses+=bonus
+
                 single_amount = 0
                 if (product.is_discount_product == True):
                     discount_amount = product.discount_amount
@@ -206,7 +218,7 @@ class ManageUserCartDetailsResource(Resource):
             user_cart.economy_percent = economy_percent
             user_cart.products_count = len(user_cart_positions)
             user_cart.currency_data = session.query(CurrencyCatalog).filter(CurrencyCatalog.id == currency_id).first()
-
+            user_cart.bonuses_amount=round(total_bonuses,2)
             return user_cart
 
         except Exception as e:

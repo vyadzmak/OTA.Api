@@ -54,7 +54,9 @@ output_fields = {
 
     'product_data':fields.Nested(product_data_fields),
     #'order_data':fields.Nested(order_data_fields),
-    'order_position_states':fields.Nested(order_position_states_data)
+    'order_position_states':fields.Nested(order_position_states_data),
+    'bonuses':fields.Float
+
 }
 
 
@@ -82,6 +84,7 @@ class OrderPositionsByOrderResource(Resource):
 
             if not orderPositions:
                 return []
+
 
             return orderPositions
         except Exception as e:

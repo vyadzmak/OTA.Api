@@ -62,7 +62,8 @@ product_data_fields ={
     'partner_id': fields.Integer,
     'currency_id': fields.Integer,
     'unit_id': fields.Integer,
-    'default_image_id': fields.Integer,
+    'default_image_id': fields.Integgit add .
+    er,
     'default_image_data': fields.Nested(default_image_data_products),
     'comments_count': fields.Integer,
     'rate': fields.Float,
@@ -78,7 +79,8 @@ user_cart_positions_fields ={
     'need_invoice': fields.Boolean,
     'description': fields.String,
     'user_cart_id':fields.Integer,
-    'user_cart_position_product_data':fields.Nested(product_data_fields)
+    'user_cart_position_product_data':fields.Nested(product_data_fields),
+    'bonuses':fields.Float
 }
 
 # OUTPUT SCHEMA
@@ -147,9 +149,9 @@ class UserCartDetailsResource(Resource):
                 single_amount = 0
 
                 if (product.bonus_percent!=None and product.bonus_percent!=0 ):
-                    bonus_value =round(product.amount*(product.bonus_percent/100),2)
+                    bonus_value =round(product.amount*cart_position.count*(product.bonus_percent/100),2)
                     bonuses_amount+=bonus_value
-
+                    cart_position.bonuses = bonus_value
 
 
                 if (product.is_discount_product == True):
@@ -180,7 +182,7 @@ class UserCartDetailsResource(Resource):
             user_cart.economy_percent = economy_percent
             user_cart.products_count = len(user_cart_positions)
             user_cart.currency_data = session.query(CurrencyCatalog).filter(CurrencyCatalog.id == currency_id).first()
-            user_cart.bonuses_amount =bonuses_amount
+            user_cart.bonuses_amount =round(bonuses_amount,2)
             return user_cart
 
         except Exception as e:

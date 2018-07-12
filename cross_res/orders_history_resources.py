@@ -1,4 +1,4 @@
-from models.db_models.models import Orders,Users
+from models.db_models.models import Orders,Users,UserBonuses
 from db.db import session
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
 import modules.db_help_modules.user_action_logging_module as user_action_logging
@@ -86,6 +86,7 @@ output_fields = {
     'display_creation_date': fields.String,
     'display_processed_date': fields.String,
     'display_execute_date': fields.String,
+    'bonuses':fields.Float
 
 }
 
@@ -116,6 +117,8 @@ class OrdersHistoryResource(Resource):
 
 
             orders = session.query(Orders).filter(Orders.user_id==user_id).order_by(desc(Orders.id)).all()
+            if not orders:
+                return []
 
             for entity in orders:
                 entity.display_creation_date = entity.creation_date.strftime("%Y-%m-%d %H:%M")
@@ -129,9 +132,11 @@ class OrdersHistoryResource(Resource):
                 if (entity.executor_id != None):
                     entity.order_executor_data = session.query(Users).filter(Users.id == entity.executor_id).first()
 
-            if not orders:
-                return []
+                entity.bonuses =0
 
+                bonus = session.query(UserBonuses).filter(UserBonuses.order_id==entity.id).first()
+                if (bonus!=None):
+                    entity.bonuses = bonus.amount
 
 
             return orders
