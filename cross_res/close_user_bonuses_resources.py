@@ -48,7 +48,7 @@ class CloseUserBonusesResource(Resource):
                 'status' : 200
             }
 
-            return user_bonuses
+            return response
         except Exception as e:
             if (hasattr(e,'data')):
                 if (e.data!=None and "message" in e.data):

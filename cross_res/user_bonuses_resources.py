@@ -44,7 +44,8 @@ class UserBonusesDetailsResource(Resource):
                 UserBonuses.state== True)) \
                 .all()
             if (not user_bonuses):
-                abort(400, message= "Bonuses not found")
+                return []
+                # abort(400, message= "Bonuses not found")
 
 
             return user_bonuses
