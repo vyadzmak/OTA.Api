@@ -45,7 +45,7 @@ class CloseUserBonusesResource(Resource):
                 session.commit()
 
             response ={
-                status : 200
+                'status' : 200
             }
 
             return user_bonuses
