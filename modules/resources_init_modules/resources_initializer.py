@@ -81,6 +81,9 @@ from cross_res.update_user_profile_resources import *
 from cross_res.update_client_profile_resources import *
 from cross_res.category_list_without_products_resources import *
 from cross_res.category_list_without_child_categories_resources import *
+from cross_res.user_bonuses_resources import *
+from cross_res.close_user_bonuses_resources import *
+
 #[resource_class]
 api_resources_crud =[
     AdminSettingsResource,
@@ -206,7 +209,9 @@ api_resources_cross =[
     UpdateUserProfileResource,
     UpdateClientProfileResource,
     CategoryListWithoutProductsResource,
-    CategoryListWithoutChildCategoriesResource
+    CategoryListWithoutChildCategoriesResource,
+    UserBonusesDetailsResource,
+    CloseUserBonusesResource
 ]
 def init_single_resource(api, resource, route, endpoint):
     api.add_resource(resource, route, endpoint=endpoint)

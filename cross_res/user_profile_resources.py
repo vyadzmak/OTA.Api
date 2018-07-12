@@ -1,4 +1,4 @@
-from models.db_models.models import UserLogins, Orders,Settings,UserInfo, Attachments,Clients, ClientAddresses,ClientInfo
+from models.db_models.models import UserLogins, Orders,Settings,UserInfo, Attachments,Clients, ClientAddresses,ClientInfo,UserBonuses
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -15,6 +15,15 @@ ROUTE = "/userProfile"
 END_POINT = "user-profile"
 
 # NESTED SCHEMA FIELDS
+user_bonuses_fields = {
+    'id': fields.Integer,
+    'order_id': fields.Integer,
+    'user_id': fields.Integer,
+    'creation_date': fields.DateTime,
+    'state':fields.Boolean,
+    'amount': fields.Float
+}
+
 area_data_fields ={
     'id': fields.Integer,
     'name': fields.String,
@@ -92,7 +101,11 @@ output_fields = {
     'last_login_date':fields.DateTime,
     'no_image_url': fields.String,
     'no_avatar_url': fields.String,
-    'thumbs_avatar_path': fields.String
+    'thumbs_avatar_path': fields.String,
+    'user_bonuses':fields.Nested(user_bonuses_fields),
+    'total_bonuses_amount': fields.Float,
+    'start_bonus_date': fields.String,
+    'end_bonus_date': fields.String,
 
 }
 
@@ -154,6 +167,29 @@ class UserProfileResource(Resource):
                 session.commit()
                 client_info = client_info_entity
             user_login.user_data.client_data.client_info = client_info
+
+            user_bonuses = session.query(UserBonuses).filter(and_(
+                UserBonuses.user_id == user_id,
+                UserBonuses.state == True)) \
+                .all()
+
+
+            user_login.user_bonuses =[]
+
+            if (user_bonuses!=None and len(user_bonuses)>0):
+                total_bonuses_amount =0
+                start_bonus_date =user_bonuses[0].creation_date
+                end_bonus_date =user_bonuses[len(user_bonuses)-1].creation_date
+
+                for bonus in user_bonuses:
+                    total_bonuses_amount+=bonus.amount
+
+                user_login.user_bonuses = user_bonuses
+                user_login.start_bonus_date = start_bonus_date.strftime("%Y-%m-%d %H:%M")
+                user_login.end_bonus_date = end_bonus_date.strftime("%Y-%m-%d %H:%M")
+
+
+
 
             return user_login
         except Exception as e:

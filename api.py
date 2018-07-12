@@ -38,3 +38,4 @@ if __name__ == '__main__':
     generate_params()
     #u_s.get_user_roles()
     app.run(host= '0.0.0.0', debug=True)
+    #app.run( debug=True)

@@ -1,9 +1,10 @@
-from models.db_models.models import Products, ProductComments, ViewSettings,UserFavoriteProducts
+from models.db_models.models import Products, ProductComments, ViewSettings,UserFavoriteProducts,OrderPositions
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
 import modules.db_model_tranformer_modules.db_model_transformer_module as db_transformer
 import modules.db_help_modules.user_action_logging_module as user_action_logging
+from operator import itemgetter
 from sqlalchemy import desc
 
 # PARAMS
@@ -96,6 +97,15 @@ class FilterProductResource(Resource):
         except Exception as e:
             return None
 
+            # filter by partner
+    def filter_by_all_partners(self):
+                try:
+                    products = session.query(Products).filter(Products.partner_id !=None).all()
+                    return products
+                    pass
+                except Exception as e:
+                    return None
+
             # filter by discount
     def filter_by_discount(self):
                 try:
@@ -175,6 +185,59 @@ class FilterProductResource(Resource):
             except Exception as e:
                 return None
 
+
+                # filter by name
+
+    def filter_by_popular(self):
+        try:
+            limit =10
+
+            order_positions = session.query(OrderPositions).all()
+
+            p_ids = []
+            for order_position in order_positions:
+                if (order_position.product_id in p_ids==True):
+                    continue
+                else:
+                    p_ids.append(order_position.product_id)
+                pass
+
+            f_products =[]
+
+            for p_id in p_ids:
+
+                ps = session.query(OrderPositions).filter(OrderPositions.product_id==p_id).all()
+
+                count =0
+
+                for p in ps:
+                    count+=p.count
+                f_products.append([p_id,count])
+
+            sorted(f_products, key=itemgetter(1))
+            result_products = []
+            counter=0
+            for pr in f_products:
+                if (counter>=limit):
+                    break
+
+                p_id =pr[0]
+
+                product = session.query(Products).filter(Products.id==p_id).first()
+
+                if (not product):
+                    continue
+
+                result_products.append(product)
+
+
+
+            # products = session.query(Products).filter(Products.name.ilike(r_name)).all()
+            # return products
+            return result_products
+        except Exception as e:
+            return None
+
     @marshal_with(output_fields)
     def get(self):
         try:
@@ -210,6 +273,10 @@ class FilterProductResource(Resource):
                 products = self.filter_by_discount()
             elif (str(filter_parameter) == '7'):
                 products = self.filter_by_stock()
+            elif (str(filter_parameter) == '8'):
+                products = self.filter_by_all_partners()
+            elif (str(filter_parameter) == '9'):
+                products = self.filter_by_popular()
 
             if not products:
                 abort(400, message='Ошибка получения данных. Данные не найдены')
