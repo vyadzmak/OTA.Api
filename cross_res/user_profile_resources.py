@@ -187,9 +187,7 @@ class UserProfileResource(Resource):
                 user_login.user_bonuses = user_bonuses
                 user_login.start_bonus_date = start_bonus_date.strftime("%Y-%m-%d %H:%M")
                 user_login.end_bonus_date = end_bonus_date.strftime("%Y-%m-%d %H:%M")
-
-
-
+                user_login.total_bonuses_amount=total_bonuses_amount
 
             return user_login
         except Exception as e:
