@@ -1,4 +1,4 @@
-from models.db_models.models import Products, Log, Users
+from models.db_models.models import Products, Log, Users,ViewSettings
 from db.db import session
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
 import modules.db_help_modules.user_action_logging_module as user_action_logging
@@ -7,9 +7,9 @@ import base64
 import datetime
 
 # PARAMS
-ENTITY_NAME = "Route Catalog Products Recommendations"
-ROUTE = "/routeCatalogProductsRecommendations"
-END_POINT = "route-catalog-products-recommendations"
+ENTITY_NAME = "Products Recommendations Catalog"
+ROUTE = "/productsRecommendationsCatalog"
+END_POINT = "products-recommendations-catalog"
 
 # NESTED SCHEMA FIELDS
 category_fields = {
@@ -20,16 +20,13 @@ category_fields = {
 output_fields = {
     'id': fields.Integer,
     'name':fields.String,
-    'category_id':fields.Integer,
-    'user_creator_id':fields.Integer,
     'product_code':fields.String,
     'is_recommend':fields.Boolean,
-    #'product_category_data':fields.Nested(category_fields)
 }
 
 
 # API METHODS FOR SINGLE ENTITY
-class RouteCatalogProductsRecommendationsResource(Resource):
+class ProductsRecommendationsCatalogResource(Resource):
     def __init__(self):
         self.route = ROUTE
         self.end_point = END_POINT
@@ -41,35 +38,28 @@ class RouteCatalogProductsRecommendationsResource(Resource):
             action_type='GET'
             parser = reqparse.RequestParser()
             parser.add_argument('user_id')
-            parser.add_argument('product_id')
+
             args = parser.parse_args()
             if (len(args) == 0):
                 abort(400, message='Arguments not found')
             user_id = args['user_id']
-            product_id = args['product_id']
             user_action_logging.log_user_actions(ROUTE,user_id, action_type)
-            product = session.query(Products).filter(Products.id==product_id).first()
+            # product = session.query(Products).filter(Products.id==product_id).first()
             t=0
 
-            products = session.query(Products).filter(Products.id!=product_id).all()
+            products = session.query(Products).all()
 
             if not products:
                 abort(400, message='Ошибка получения данных. Данные не найдены')
 
-            if (not product):
 
+            settings = session.query(ViewSettings).first()
 
-                return products
+            if (not settings):
+                return Products
 
-            recommendations =product.product_recomendations
+            recommendations =settings.recomendation_elements
 
-            if (not recommendations):
-                #если у продукта нет рекомендаций то выводим весь список товаров
-                rec_products = session.query(Products).filter(Products.id != product_id).all()
-                for r_product in rec_products:
-                    r_product.is_recommend = False
-
-                return rec_products
 
             if (len(recommendations)>0):
                 for pr in products:

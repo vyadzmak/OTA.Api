@@ -79,7 +79,7 @@ user_cart_positions_fields ={
     'description': fields.String,
     'user_cart_id':fields.Integer,
     'user_cart_position_product_data':fields.Nested(product_data_fields),
-    'bonus': fields.Float
+    'bonuses': fields.Float
 }
 
 # OUTPUT SCHEMA
@@ -173,7 +173,7 @@ class ManageUserCartDetailsResource(Resource):
 
             for cart_position in user_cart_positions:
                 count = cart_position.count
-
+                cart_position.bonus =0
                 product = session.query(Products).filter(Products.id == cart_position.product_id).first()
                 if (currency_id == -1):
                     currency_id = product.currency_id
@@ -181,12 +181,12 @@ class ManageUserCartDetailsResource(Resource):
                 if (not product):
                     continue
 
-                cart_position.bonus =0
+                cart_position.bonuses =0
                 if (cart_position.count!=0):
                     bonus =product.amount* (product.bonus_percent/100)*cart_position.count
                     bonus = round(bonus,2)
                     if (bonus != None):
-                        cart_position.bonus = bonus
+                        cart_position.bonuses = bonus
                         total_bonuses+=bonus
 
                 single_amount = 0

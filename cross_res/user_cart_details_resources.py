@@ -62,8 +62,7 @@ product_data_fields ={
     'partner_id': fields.Integer,
     'currency_id': fields.Integer,
     'unit_id': fields.Integer,
-    'default_image_id': fields.Integgit add .
-    er,
+    'default_image_id': fields.Integer,
     'default_image_data': fields.Nested(default_image_data_products),
     'comments_count': fields.Integer,
     'rate': fields.Float,
@@ -147,7 +146,7 @@ class UserCartDetailsResource(Resource):
                 if (not product):
                     continue
                 single_amount = 0
-
+                cart_position.bonuses =0
                 if (product.bonus_percent!=None and product.bonus_percent!=0 ):
                     bonus_value =round(product.amount*cart_position.count*(product.bonus_percent/100),2)
                     bonuses_amount+=bonus_value
