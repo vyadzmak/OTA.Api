@@ -1,4 +1,4 @@
-from models.db_models.models import Products, ProductComments, ViewSettings,UserFavoriteProducts,OrderPositions
+from models.db_models.models import Products, ProductComments, ViewSettings,UserFavoriteProducts,OrderPositions,UserCartPositions,UserCarts
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -6,7 +6,7 @@ import modules.db_model_tranformer_modules.db_model_transformer_module as db_tra
 import modules.db_help_modules.user_action_logging_module as user_action_logging
 from operator import itemgetter
 from sqlalchemy import desc
-
+from sqlalchemy import and_
 # PARAMS
 ENTITY_NAME = "Filter Products"
 MODEL = Products
@@ -69,7 +69,8 @@ output_fields = {
     'comments_count': fields.Integer,
     'rate': fields.Float,
     'product_unit_data': fields.Nested(unit_data_fields),
-    'product_currency_data': fields.Nested(currency_data_fields)
+    'product_currency_data': fields.Nested(currency_data_fields),
+    'count':fields.Integer
 }
 
 
@@ -79,6 +80,13 @@ class FilterProductResource(Resource):
         self.route = ROUTE
         self.end_point = END_POINT
         pass
+
+    def get_user_cart_argument(self,args):
+        try:
+            user_cart_id = args['user_cart_id']
+            return int(user_cart_id)
+        except:
+            return -1
 
     # filter by brand
     def filter_by_brand(self, brand_id):
@@ -247,12 +255,14 @@ class FilterProductResource(Resource):
             parser.add_argument('user_id')
             parser.add_argument('filter_parameter')
             parser.add_argument('filter_value')
+            parser.add_argument('user_cart_id')
             args = parser.parse_args()
             if (len(args) == 0):
                 abort(400, message='Arguments not found')
             user_id = args['user_id']
             filter_parameter = args['filter_parameter']
             filter_value = args['filter_value']
+            user_cart_id = self.get_user_cart_argument(args)
             user_action_logging.log_user_actions(ROUTE, user_id, action_type)
             products = []
             # filter paramenters 1 - brands, 2 -partners, 3 - favorites, 4 - recommends , 5 - filter by name, 6 - discount, 7 -stock
@@ -281,6 +291,21 @@ class FilterProductResource(Resource):
             if not products:
                 abort(400, message='Ошибка получения данных. Данные не найдены')
             for product in products:
+                if (user_cart_id==-1):
+                    product.count =1
+                else:
+                    user_cart = session.query(UserCarts).filter(UserCarts.id == user_cart_id).first()
+                    check_user_cart_positions = session.query(UserCartPositions).filter(and_(
+                        UserCartPositions.user_cart_id == user_cart.id,
+                        UserCartPositions.product_id == product.id
+                    )).first()
+
+                    if (not check_user_cart_positions):
+                        product.count = 1
+                    else:
+                        product.count=check_user_cart_positions.count
+                    pass
+
                 comments = session.query(ProductComments).filter(
                     ProductComments.product_id == product.id and ProductComments.is_delete == False).all()
                 product.comments_count = 0

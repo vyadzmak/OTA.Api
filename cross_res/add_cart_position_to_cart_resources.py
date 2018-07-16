@@ -104,6 +104,8 @@ class AddCartPositionToCartResource(Resource):
                 session.add(user_cart_position_entity)
                 session.commit()
             else:
+
+                check_user_cart_positions.count = count
                 session.add(check_user_cart_positions)
                 session.commit()
 

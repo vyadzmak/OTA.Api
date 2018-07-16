@@ -1,11 +1,11 @@
-from models.db_models.models import Products, ProductComments, Attachments
+from models.db_models.models import Products, ProductComments, Attachments,Orders,OrderPositions
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
 import modules.db_model_tranformer_modules.db_model_transformer_module as db_transformer
 import modules.db_help_modules.user_action_logging_module as user_action_logging
 from sqlalchemy import desc
-
+from sqlalchemy import and_
 # PARAMS
 ENTITY_NAME = "Product Details"
 MODEL = Products
@@ -115,7 +115,8 @@ output_fields = {
     'gallery_images_data': fields.Nested(gallery_image_data_fields),
     'product_recomendations_data': fields.Nested(recommendations_data_fields),
     'recommended_amount':fields.Float,
-    'bonus_percent':fields.Float
+    'bonus_percent':fields.Float,
+    'can_comments':fields.Boolean
 }
 
 
@@ -145,11 +146,23 @@ class ProductDetailsResource(Resource):
             if not product:
                 abort(400, message='Ошибка получения данных. Данные не найдены')
 
+            product.can_comments =False
+
+            orders = session.query(Orders).filter(Orders.user_id==user_id).all()
+
+            for order in orders:
+                order_positions = session.query(OrderPositions).filter(
+                    and_
+                )
+
+
             comments = session.query(ProductComments).filter(
                 ProductComments.product_id == product.id and ProductComments.is_delete == False).all()
 
+
             product.comments_count = 0
             product.rate = 0
+
 
             if (comments != None):
                 total_rate = 0

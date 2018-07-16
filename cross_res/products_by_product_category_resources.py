@@ -1,10 +1,11 @@
-from models.db_models.models import Products, ProductComments
+from models.db_models.models import Products, ProductComments,UserCarts,UserCartPositions
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
 import modules.db_model_tranformer_modules.db_model_transformer_module as db_transformer
 import modules.db_help_modules.user_action_logging_module as user_action_logging
 from sqlalchemy import desc
+from sqlalchemy import and_
 #PARAMS
 ENTITY_NAME = "Products by Product Category"
 MODEL = Products
@@ -69,7 +70,8 @@ output_fields = {
     'product_unit_data':fields.Nested(unit_data_fields),
     'product_currency_data':fields.Nested(currency_data_fields),
     'recommended_amount':fields.Float,
-    'bonus_percent':fields.Float
+    'bonus_percent':fields.Float,
+    'count':fields.Integer
 
 }
 
@@ -82,6 +84,13 @@ class ProductsByProductCategoryResource(Resource):
         self.end_point = END_POINT
         pass
 
+    def get_user_cart_argument(self,args):
+        try:
+            user_cart_id = args['user_cart_id']
+            return int(user_cart_id)
+        except:
+            return -1
+
     @marshal_with(output_fields)
     def get(self):
         try:
@@ -90,17 +99,34 @@ class ProductsByProductCategoryResource(Resource):
             parser = reqparse.RequestParser()
             parser.add_argument('user_id')
             parser.add_argument('category_id')
+            parser.add_argument('user_cart_id')
             args = parser.parse_args()
             if (len(args) == 0):
                 abort(400, message='Arguments not found')
             user_id = args['user_id']
             category_id = args['category_id']
+            user_cart_id =self.get_user_cart_argument(args)
+
             user_action_logging.log_user_actions(ROUTE,user_id, action_type)
             products = session.query(Products).filter(Products.category_id==category_id).order_by(desc(Products.id)).all()
             #products = products.
             if not products:
                 abort(400, message='Ошибка получения данных. Данные не найдены')
             for product in products:
+                if (user_cart_id==-1):
+                    product.count =1
+                else:
+                    user_cart = session.query(UserCarts).filter(UserCarts.id == user_cart_id).first()
+                    check_user_cart_positions = session.query(UserCartPositions).filter(and_(
+                        UserCartPositions.user_cart_id == user_cart.id,
+                        UserCartPositions.product_id == product.id
+                    )).first()
+
+                    if (not check_user_cart_positions):
+                        product.count = 1
+                    else:
+                        product.count=check_user_cart_positions.count
+                    pass
                 comments = session.query(ProductComments).filter(ProductComments.product_id==product.id and ProductComments.is_delete==False).all()
                 product.comments_count = 0
                 product.rate = 0
@@ -116,6 +142,9 @@ class ProductsByProductCategoryResource(Resource):
                 if (comments_count>0):
                     product.comments_count =comments_count
                     product.rate =round((total_rate/comments_count),2)
+
+
+
 
             #products.internal_products_count = len(products)
 
