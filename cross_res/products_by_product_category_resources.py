@@ -71,7 +71,12 @@ output_fields = {
     'product_currency_data':fields.Nested(currency_data_fields),
     'recommended_amount':fields.Float,
     'bonus_percent':fields.Float,
-    'count':fields.Integer
+    'count':fields.Integer,
+    'product_alt_unit_data': fields.Nested(unit_data_fields),
+    'alt_amount': fields.Float,
+    'alt_unit_value': fields.Float,
+    'alt_unit_id': fields.Integer,
+    'alt_discount_amount': fields.Float
 
 }
 
@@ -108,7 +113,7 @@ class ProductsByProductCategoryResource(Resource):
             user_cart_id =self.get_user_cart_argument(args)
 
             user_action_logging.log_user_actions(ROUTE,user_id, action_type)
-            products = session.query(Products).filter(Products.category_id==category_id).order_by(desc(Products.id)).all()
+            products = session.query(Products).filter(Products.category_id==category_id, Products.is_delete == False).order_by(desc(Products.id)).all()
             #products = products.
             if not products:
                 abort(400, message='Ошибка получения данных. Данные не найдены')

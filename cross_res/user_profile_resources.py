@@ -1,4 +1,5 @@
-from models.db_models.models import UserLogins, Orders,Settings,UserInfo, Attachments,Clients, ClientAddresses,ClientInfo,UserBonuses
+from models.db_models.models import UserLogins, Orders, Settings, UserInfo, Attachments, Clients, ClientAddresses, \
+    ClientInfo, UserBonuses
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -20,37 +21,38 @@ user_bonuses_fields = {
     'order_id': fields.Integer,
     'user_id': fields.Integer,
     'creation_date': fields.DateTime,
-    'state':fields.Boolean,
+    'state': fields.Boolean,
     'amount': fields.Float
 }
 
-area_data_fields ={
+area_data_fields = {
     'id': fields.Integer,
     'name': fields.String,
 
 }
 city_data_fields = {
-    'id':fields.Integer,
-    'name':fields.String,
-    'area_id':fields.Integer,
-    'area_data':fields.Nested(area_data_fields)
+    'id': fields.Integer,
+    'name': fields.String,
+    'area_id': fields.Integer,
+    'area_data': fields.Nested(area_data_fields)
 }
 
-#OUTPUT SCHEMA
+# OUTPUT SCHEMA
 client_addresses_fields = {
     'id': fields.Integer,
-    'client_id':fields.Integer,
+    'client_id': fields.Integer,
     'address': fields.String,
     'is_default': fields.Boolean,
     'name': fields.String,
-    'confirmed':fields.Boolean,
-    'tobacco_alcohol_license':fields.Boolean,
-    'code':fields.String,
+    'confirmed': fields.Boolean,
+    'tobacco_alcohol_license': fields.Boolean,
+    'code': fields.String,
     'city_id': fields.Integer,
-    'city_data':fields.Nested(city_data_fields)
+    'city_data': fields.Nested(city_data_fields),
+    'phone_number': fields.String
 }
-client_info_fields={
-    'id':fields.Integer,
+client_info_fields = {
+    'id': fields.Integer,
     'email': fields.String,
     'main_info': fields.String,
     'additional_info': fields.String,
@@ -77,13 +79,13 @@ avatar_data_fields = {
     'optimized_size_file_path': fields.String
 }
 user_info_data = {
-    "id":fields.Integer,
-    "user_id":fields.Integer,
-    "email":fields.String,
-    "phone_number":fields.String,
-    "birthday":fields.String,
-    'avatar_id':fields.Integer,
-    'avatar_data':fields.Nested(avatar_data_fields)
+    "id": fields.Integer,
+    "user_id": fields.Integer,
+    "email": fields.String,
+    "phone_number": fields.String,
+    "birthday": fields.String,
+    'avatar_id': fields.Integer,
+    'avatar_data': fields.Nested(avatar_data_fields)
 }
 login_user_data = {
     'id': fields.Integer,
@@ -98,11 +100,11 @@ output_fields = {
     'login': fields.String,
     'password': fields.String,
     'user_data': fields.Nested(login_user_data),
-    'last_login_date':fields.DateTime,
+    'last_login_date': fields.DateTime,
     'no_image_url': fields.String,
     'no_avatar_url': fields.String,
     'thumbs_avatar_path': fields.String,
-    'user_bonuses':fields.Nested(user_bonuses_fields),
+    'user_bonuses': fields.Nested(user_bonuses_fields),
     'total_bonuses_amount': fields.Float,
     'start_bonus_date': fields.String,
     'end_bonus_date': fields.String,
@@ -119,7 +121,7 @@ class UserProfileResource(Resource):
 
     @marshal_with(output_fields)
     def get(self):
-        error_message =''
+        error_message = ''
         try:
             parser = reqparse.RequestParser()
             parser.add_argument('user_id')
@@ -129,14 +131,14 @@ class UserProfileResource(Resource):
             user_id = args['user_id']
 
             # check login
-            user_login = session.query(UserLogins).filter(UserLogins.user_id==user_id).first()
+            user_login = session.query(UserLogins).filter(UserLogins.user_id == user_id).first()
 
-            #no image url
-            setting = session.query(Settings).filter(Settings.name=='no_image_url').first()
+            # no image url
+            setting = session.query(Settings).filter(Settings.name == 'no_image_url').first()
             if (not setting):
                 return user_login
             # api_url = settings.API_URL
-            user_login.no_image_url=setting.value
+            user_login.no_image_url = setting.value
 
             setting = session.query(Settings).filter(Settings.name == 'no_avatar_url').first()
             if (not setting):
@@ -152,8 +154,8 @@ class UserProfileResource(Resource):
                     user_login.thumbs_avatar_path = attachment.thumb_file_path
 
             user_login.user_data.user_info = user_info
-            client_id =user_login.user_data.client_data.id
-            addresses = session.query(ClientAddresses).filter(ClientAddresses.client_id==client_id).all()
+            client_id = user_login.user_data.client_data.id
+            addresses = session.query(ClientAddresses).filter(ClientAddresses.client_id == client_id).all()
 
             user_login.user_data.client_data.client_addresses = addresses
 
@@ -173,23 +175,21 @@ class UserProfileResource(Resource):
                 UserBonuses.state == True)) \
                 .all()
 
+            user_login.user_bonuses = []
 
-            user_login.user_bonuses =[]
-
-            if (user_bonuses!=None and len(user_bonuses)>0):
-                total_bonuses_amount =0
-                start_bonus_date =user_bonuses[0].creation_date
-                end_bonus_date =user_bonuses[len(user_bonuses)-1].creation_date
+            if (user_bonuses != None and len(user_bonuses) > 0):
+                total_bonuses_amount = 0
+                start_bonus_date = user_bonuses[0].creation_date
+                end_bonus_date = user_bonuses[len(user_bonuses) - 1].creation_date
 
                 for bonus in user_bonuses:
-                    total_bonuses_amount+=bonus.amount
+                    total_bonuses_amount += bonus.amount
 
                 user_login.user_bonuses = user_bonuses
                 user_login.start_bonus_date = start_bonus_date.strftime("%Y-%m-%d %H:%M")
                 user_login.end_bonus_date = end_bonus_date.strftime("%Y-%m-%d %H:%M")
-                user_login.total_bonuses_amount=total_bonuses_amount
+                user_login.total_bonuses_amount = total_bonuses_amount
 
             return user_login
         except Exception as e:
-            abort(400, message = error_message)
-
+            abort(400, message=error_message)

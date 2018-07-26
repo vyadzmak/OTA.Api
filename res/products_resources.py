@@ -60,7 +60,11 @@ output_fields = {
     'images_data':fields.Nested(default_image_data_products),
     'product_recomendations_data':fields.Nested(product_recomendations_fields),
     'recommended_amount':fields.Float,
-    'bonus_percent':fields.Float
+    'bonus_percent':fields.Float,
+    'alt_amount': fields.Float,
+    'alt_unit_value': fields.Float,
+    'alt_unit_id': fields.Integer,
+    'alt_discount_amount': fields.Float
 }
 
 
@@ -76,7 +80,7 @@ class ProductsResource(Resource):
         # session.autocommit = False
         # session.autoflush = False
 
-        entity = session.query(MODEL).filter(MODEL.id == id).first()
+        entity = session.query(MODEL).filter(MODEL.id == id, MODEL.is_delete == False).first()
         if not entity:
             abort(404, message=ENTITY_NAME+" {} doesn't exist".format(id))
         # api_url = settings.API_URL
@@ -117,7 +121,8 @@ class ProductsResource(Resource):
             entity = session.query(MODEL).filter(MODEL.id == id).first()
             if not entity:
                 abort(404, message=ENTITY_NAME+" {} doesn't exist".format(id))
-            session.delete(entity)
+            entity.is_delete = True
+            session.add(entity)
             session.commit()
             return {}, 204
         except Exception as e:
@@ -183,7 +188,7 @@ class ProductsListResource(Resource):
             # session.autocommit = False
             # session.autoflush = False
 
-            entities = session.query(MODEL).all()
+            entities = session.query(MODEL).filter(MODEL.is_delete == False).all()
             for entity in entities:
                 entity.images_data = []
                 api_url = settings.API_URL

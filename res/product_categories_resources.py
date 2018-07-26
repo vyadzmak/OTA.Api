@@ -53,7 +53,7 @@ class ProductCategoriesResource(Resource):
             # session.autocommit = False
             # session.autoflush = False
 
-            entity = session.query(MODEL).filter(MODEL.id == id).first()
+            entity = session.query(MODEL).filter(MODEL.id == id, MODEL.is_delete == False).first()
             if not entity:
                 abort(404, message=ENTITY_NAME+" {} doesn't exist".format(id))
             # api_url = settings.API_URL
@@ -86,7 +86,7 @@ class ProductCategoriesResource(Resource):
             return entity
         except Exception as e:
             session.rollback()
-            abort(400, message="Error while update " + ENTITY_NAME)
+            abort(400, message="Error while getting " + ENTITY_NAME + " " + str(id))
         finally:
             pass
             #session.rollback()
@@ -96,7 +96,8 @@ class ProductCategoriesResource(Resource):
             entity = session.query(MODEL).filter(MODEL.id == id).first()
             if not entity:
                 abort(404, message=ENTITY_NAME+" {} doesn't exist".format(id))
-            session.delete(entity)
+            entity.is_delete = True
+            session.add(entity)
             session.commit()
             return {}, 204
         except Exception as e:
@@ -135,7 +136,7 @@ class ProductCategoriesResource(Resource):
             #
             entity.images_data = []
 
-            if (entity.images != None and len(entity.images) > 0):
+            if entity.images is not None and len(entity.images) > 0:
                 for img_id in entity.images:
                     image = session.query(Attachments).filter(Attachments.id == img_id).first()
                     if not image:
@@ -163,11 +164,11 @@ class ProductCategoriesListResource(Resource):
             session.autocommit = False
             session.autoflush = False
 
-            entities = session.query(MODEL).all()
+            entities = session.query(MODEL).filter(MODEL.is_delete == False).all()
             for entity in entities:
                 entity.images_data = []
 
-                if (entity.images!=None and len(entity.images) > 0):
+                if entity.images is not None and len(entity.images) > 0:
                     for img_id in entity.images:
                         image = session.query(Attachments).filter(Attachments.id == img_id).first()
                         if not image:

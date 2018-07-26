@@ -51,7 +51,11 @@ output_fields = {
     'default_image_id': fields.Integer,
     'default_image_data':fields.Nested(default_image_data_products),
     'recommended_amount':fields.Float,
-    'bonus_percent':fields.Float
+    'bonus_percent':fields.Float,
+    'alt_amount': fields.Float,
+    'alt_unit_value': fields.Float,
+    'alt_unit_id': fields.Integer,
+    'alt_discount_amount': fields.Float
 }
 
 

@@ -34,7 +34,8 @@ output_fields = {
     'default_image_id': fields.Integer,
     'default_image_data_partners':fields.Nested(default_image_data_partners),
     'images_data':fields.Nested(default_image_data_partners),
-    'products_count': fields.Integer
+    'products_count': fields.Integer,
+    'minimum_order_amount': fields.Float
 }
 
 

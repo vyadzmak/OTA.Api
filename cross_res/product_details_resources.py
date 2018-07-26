@@ -1,4 +1,5 @@
-from models.db_models.models import Products, ProductComments, Attachments,Orders,OrderPositions,BrandsCatalog,PartnersCatalog
+from models.db_models.models import Products, ProductComments, Attachments, Orders, OrderPositions, BrandsCatalog, \
+    PartnersCatalog
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -6,6 +7,7 @@ import modules.db_model_tranformer_modules.db_model_transformer_module as db_tra
 import modules.db_help_modules.user_action_logging_module as user_action_logging
 from sqlalchemy import desc
 from sqlalchemy import and_
+
 # PARAMS
 ENTITY_NAME = "Product Details"
 MODEL = Products
@@ -14,15 +16,14 @@ END_POINT = "product-details"
 
 # NESTED SCHEMA FIELDS
 brand_data_fields = {
-    'id':fields.Integer,
+    'id': fields.Integer,
     'name': fields.String
 }
 
 partner_data_fields = {
-    'id':fields.Integer,
+    'id': fields.Integer,
     'name': fields.String
 }
-
 
 currency_data_fields = {
     'id': fields.Integer,
@@ -89,7 +90,12 @@ recommendations_data_fields = {
     'comments_count': fields.Integer,
     'rate': fields.Float,
     'product_unit_data': fields.Nested(unit_data_fields),
-    'product_currency_data': fields.Nested(currency_data_fields)
+    'product_currency_data': fields.Nested(currency_data_fields),
+    'product_alt_unit_data': fields.Nested(unit_data_fields),
+    'alt_amount': fields.Float,
+    'alt_unit_value': fields.Float,
+    'alt_unit_id': fields.Integer,
+    'alt_discount_amount': fields.Float
 }
 # OUTPUT SCHEMA
 output_fields = {
@@ -110,9 +116,9 @@ output_fields = {
     'not_show_in_catalog': fields.Boolean,
     'stock_text': fields.String,
     'brand_id': fields.Integer,
-    'brand_data':fields.Nested(brand_data_fields),
+    'brand_data': fields.Nested(brand_data_fields),
     'partner_id': fields.Integer,
-    'partner_data':fields.Nested(partner_data_fields),
+    'partner_data': fields.Nested(partner_data_fields),
     'currency_id': fields.Integer,
     'unit_id': fields.Integer,
     'default_image_id': fields.Integer,
@@ -127,9 +133,14 @@ output_fields = {
 
     'gallery_images_data': fields.Nested(gallery_image_data_fields),
     'product_recomendations_data': fields.Nested(recommendations_data_fields),
-    'recommended_amount':fields.Float,
-    'bonus_percent':fields.Float,
-    'can_comments':fields.Boolean
+    'recommended_amount': fields.Float,
+    'bonus_percent': fields.Float,
+    'can_comments': fields.Boolean,
+    'product_alt_unit_data': fields.Nested(unit_data_fields),
+    'alt_amount': fields.Float,
+    'alt_unit_value': fields.Float,
+    'alt_unit_id': fields.Integer,
+    'alt_discount_amount': fields.Float
 }
 
 
@@ -159,16 +170,16 @@ class ProductDetailsResource(Resource):
             if not product:
                 abort(400, message='Ошибка получения данных. Данные не найдены')
 
-            if (product.brand_id!=None):
-                product.brand_data = session.query(BrandsCatalog).filter(BrandsCatalog.id==product.brand_id).first()
+            if (product.brand_id != None):
+                product.brand_data = session.query(BrandsCatalog).filter(BrandsCatalog.id == product.brand_id).first()
 
             if (product.partner_id != None):
-                product.partner_data = session.query(PartnersCatalog).filter(PartnersCatalog.id == product.partner_id).first()
+                product.partner_data = session.query(PartnersCatalog).filter(
+                    PartnersCatalog.id == product.partner_id).first()
 
+            product.can_comments = False
 
-            product.can_comments =False
-
-            orders = session.query(Orders).filter(Orders.user_id==user_id).all()
+            orders = session.query(Orders).filter(Orders.user_id == user_id).all()
 
             for order in orders:
                 order_positions = session.query(OrderPositions).filter(
@@ -178,18 +189,15 @@ class ProductDetailsResource(Resource):
                     )
                 ).first()
 
-                if (order_positions!=None):
-                    product.can_comments =True
+                if (order_positions != None):
+                    product.can_comments = True
                     break
-
 
             comments = session.query(ProductComments).filter(
                 ProductComments.product_id == product.id and ProductComments.is_delete == False).all()
 
-
             product.comments_count = 0
             product.rate = 0
-
 
             if (comments != None):
                 total_rate = 0
@@ -204,7 +212,7 @@ class ProductDetailsResource(Resource):
 
                     # products.internal_products_count = len(products)
             attachments = []
-            if (product.gallery_images!=None):
+            if (product.gallery_images != None):
                 for a_id in product.gallery_images:
                     attachment = session.query(Attachments).filter(Attachments.id == a_id).first()
                     if (attachment != None):
@@ -214,23 +222,24 @@ class ProductDetailsResource(Resource):
 
             recommendations = []
 
-            if (product.product_recomendations!=None):
+            if product.product_recomendations is not None:
                 for p_id in product.product_recomendations:
-                    recommended_product = session.query(Products).filter(Products.id == p_id).first()
-                    if (recommended_product != None):
-                        rec_comments = session.query(ProductComments).filter(ProductComments.product_id
-                                                                             == recommended_product.id and ProductComments.is_delete ==
-                                                                             False).all()
+                    recommended_product = session.query(Products).filter(Products.id == p_id,
+                                                                         Products.is_delete == False).first()
+                    if recommended_product is not None:
+                        rec_comments = session.query(ProductComments) \
+                            .filter(ProductComments.product_id == recommended_product.id,
+                                    ProductComments.is_delete == False).all()
                         recommended_product.comments_count = 0
                         recommended_product.rate = 0
-                        if (rec_comments != None):
+                        if rec_comments is not None:
                             rec_total_rate = 0
                             rec_comments_count = 0
                             for rec_comment in rec_comments:
                                 rec_total_rate += rec_comment.rate
                                 rec_comments_count += 1
 
-                            if (rec_comments_count > 0):
+                            if rec_comments_count > 0:
                                 recommended_product.comments_count = rec_comments_count
                                 recommended_product.rate = round((rec_total_rate / rec_comments_count), 2)
                     recommendations.append(recommended_product)

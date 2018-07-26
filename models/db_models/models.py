@@ -14,6 +14,7 @@ from sqlalchemy.dialects.postgresql import UUID
 import uuid
 import datetime
 import random
+
 Base = declarative_base()
 
 import modules.db_model_tranformer_modules.db_model_transformer_module as db_tranformer
@@ -31,14 +32,15 @@ class AdminSettings(Base):
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
 
+
 # area catalog
 class AreaCatalog(Base):
-        __tablename__ = 'area_catalog'
-        id = Column('id', Integer, primary_key=True)
-        name = Column('name', String(1000))
+    __tablename__ = 'area_catalog'
+    id = Column('id', Integer, primary_key=True)
+    name = Column('name', String(1000))
 
-        def __init__(self, *args):
-            db_tranformer.transform_constructor_params(self, args)
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
 
 
 # admin settings table
@@ -55,12 +57,13 @@ class Attachments(Base):
     optimized_size_file_path = Column('optimized_size_file_path', String(256))
 
     attachment_user_data = relationship('Users', backref="attachment_user_data")
+
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
         self.upload_date = datetime.datetime.now(datetime.timezone.utc)
         self.uid = str(uuid.uuid4())
-        #self.thumb_file_path = None
-        #self.optimized_size_file_path = None
+        # self.thumb_file_path = None
+        # self.optimized_size_file_path = None
 
 
 # brands catalog
@@ -74,18 +77,23 @@ class BrandsCatalog(Base):
     default_image_id = Column('default_image_id', ForeignKey('attachments.id'))
 
     default_image_data_brands = relationship('Attachments', backref="default_image_data_brands")
+
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
 
-    # area catalog
+        # area catalog
+
+
 class CityCatalog(Base):
-        __tablename__ = 'city_catalog'
-        id = Column('id', Integer, primary_key=True)
-        name = Column('name', String(1000))
-        area_id= Column('area_id', ForeignKey('area_catalog.id'))
-        area_data = relationship("AreaCatalog",backref ="area_data")
-        def __init__(self, *args):
-            db_tranformer.transform_constructor_params(self, args)
+    __tablename__ = 'city_catalog'
+    id = Column('id', Integer, primary_key=True)
+    name = Column('name', String(1000))
+    area_id = Column('area_id', ForeignKey('area_catalog.id'))
+    area_data = relationship("AreaCatalog", backref="area_data")
+
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
+
 
 # client addresses
 class ClientAddresses(Base):
@@ -95,18 +103,20 @@ class ClientAddresses(Base):
     address = Column('address', String(500))
     is_default = Column('is_default', Boolean)
     confirmed = Column('confirmed', Boolean)
-    tobacco_alcohol_license=Column('tobacco_alcohol_license',Boolean)
+    tobacco_alcohol_license = Column('tobacco_alcohol_license', Boolean)
     name = Column('name', String(250))
     code = Column('code', String(250))
-
+    phone_number = Column('phone_number', String(50))
 
     city_id = Column('city_id', ForeignKey('city_catalog.id'))
 
     city_data = relationship('CityCatalog', backref="city_data")
     related_clients = relationship('Clients', backref="client_addresses_data")
+
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
         self.confirmed = False
+
 
 # client info
 class ClientInfo(Base):
@@ -121,6 +131,7 @@ class ClientInfo(Base):
 
     attachment_data = relationship('Attachments', backref="attachment_data")
     related_clients = relationship('Clients', backref="client_info_data")
+
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
 
@@ -148,10 +159,12 @@ class Clients(Base):
 
     client_type_data = relationship('ClientTypes', backref="client_type_data")
     related_users = relationship('Users', backref="client_data")
+
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
         self.registration_date = datetime.datetime.now(datetime.timezone.utc)
         self.lock_state = False
+
 
 # currency catalog
 class CurrencyCatalog(Base):
@@ -236,13 +249,14 @@ class Orders(Base):
     amount_discount = Column('amount_discount', Float)
     total_amount = Column('total_amount', Float)
     order_state_id = Column('order_state_id', ForeignKey('order_states.id'))
-    client_address_id = Column('client_address_id',ForeignKey('client_addresses.id'))
-    currency_id = Column('currency_id',ForeignKey('currency_catalog.id'))
+    client_address_id = Column('client_address_id', ForeignKey('client_addresses.id'))
+    currency_id = Column('currency_id', ForeignKey('currency_catalog.id'))
 
-    currency_data = relationship('CurrencyCatalog',backref = "currency_data")
-    client_address_data = relationship('ClientAddresses',backref = "client_address_data")
-    order_state_data = relationship('OrderStates',backref = "order_state_data")
-    #order_user_data = relationship('Users',backref = "order_user_data")
+    currency_data = relationship('CurrencyCatalog', backref="currency_data")
+    client_address_data = relationship('ClientAddresses', backref="client_address_data")
+    order_state_data = relationship('OrderStates', backref="order_state_data")
+
+    # order_user_data = relationship('Users',backref = "order_user_data")
 
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
@@ -250,7 +264,6 @@ class Orders(Base):
         # self.start_counter =
         self.number = ''
         self.order_state_id = 1
-
 
 
 # partners catalog
@@ -262,11 +275,13 @@ class PartnersCatalog(Base):
     description = Column('description', String(1000))
     short_description = Column('short_description', String(600))
     default_image_id = Column('default_image_id', ForeignKey('attachments.id'))
+    minimum_order_amount = Column('minimum_order_amount', Float)
 
     default_image_data_partners = relationship('Attachments', backref="default_image_dat_partners")
 
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
+        self.minimum_order_amount = 0
 
 
 # product categories
@@ -282,12 +297,15 @@ class ProductCategories(Base):
     is_lock = Column('is_lock', Boolean)
     parent_category_id = Column('parent_category_id', Integer)
     default_image_id = Column('default_image_id', ForeignKey('attachments.id'))
+    is_delete = Column('is_delete', Boolean)
 
     default_image_data = relationship('Attachments', backref="default_image_data_product_categories")
+
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
         self.creation_date = datetime.datetime.now(datetime.timezone.utc)
         self.is_lock = False
+
 
 # product comments
 class ProductComments(Base):
@@ -302,10 +320,12 @@ class ProductComments(Base):
 
     comment_user_data = relationship('Users', backref="comment_user_data")
     comment_product_data = relationship('Products', backref="comment_product_data")
+
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
         self.creation_date = datetime.datetime.now(datetime.timezone.utc)
-        self.is_delete =False
+        self.is_delete = False
+
 
 # products catalog
 class Products(Base):
@@ -335,30 +355,39 @@ class Products(Base):
     default_image_id = Column('default_image_id', ForeignKey('attachments.id'))
     bonus_percent = Column('bonus_percent', Float)
     recommended_amount = Column('recommended_amount', Float)
-
+    alt_amount = Column('alt_amount', Float)
+    alt_unit_value = Column('alt_unit_value', Float)
+    alt_unit_id = Column('alt_unit_id', ForeignKey('unit_catalog.id'))
+    alt_discount_amount = Column('alt_discount_amount', Float)
+    is_delete = Column('is_delete', Boolean)
 
     default_image_data = relationship('Attachments', backref="default_image_data_product_products")
-    product_unit_data = relationship("UnitCatalog", backref ="product_unit_data")
-    product_currency_data = relationship("CurrencyCatalog", backref ="product_currency_data")
+    product_unit_data = relationship("UnitCatalog", backref="product_unit_data", foreign_keys=[unit_id])
+    product_alt_unit_data = relationship("UnitCatalog", backref="product_alt_unit_data", foreign_keys=[alt_unit_id])
+    product_currency_data = relationship("CurrencyCatalog", backref="product_currency_data")
 
-    #product_category_data6 = relationship('ProductCategories', backref="product_category_data6")
+    # product_category_data6 = relationship('ProductCategories', backref="product_category_data6")
 
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
         self.creation_date = datetime.datetime.now(datetime.timezone.utc)
-        self.is_stock_product=False
-        self.is_discount_product=False
-        self.not_available=False
-        self.not_show_in_catalog=False
+        self.is_stock_product = False
+        self.is_discount_product = False
+        self.not_available = False
+        self.not_show_in_catalog = False
         self.unit_value = 0
-        self.discount_amount=0
-        self.product_code =''
-        self.product_recomendations=[
+        self.discount_amount = 0
+        self.alt_unit_value = 0
+        self.alt_discount_amount = 0
+        self.alt_amount = 0
+        self.product_code = ''
+        self.product_recomendations = [
 
         ]
-        self.stock_text =''
-        self.bonus_percent =0
-        self.recommended_amount =0
+        self.stock_text = ''
+        self.bonus_percent = 0
+        self.recommended_amount = 0
+
 
 # settings
 class Settings(Base):
@@ -383,20 +412,23 @@ class UnitCatalog(Base):
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
 
-    # user carts
-class UserBonuses(Base):
-        __tablename__ = 'user_bonuses'
-        id = Column('id', Integer, primary_key=True)
-        user_id = Column('user_id', ForeignKey('users.id'))
-        order_id = Column('order_id', ForeignKey('orders.id'))
-        creation_date = Column('creation_date', DateTime)
-        state = Column('state', Boolean)
-        amount = Column('amount', Float)
+        # user carts
 
-        def __init__(self, *args):
-            db_tranformer.transform_constructor_params(self, args)
-            self.creation_date = datetime.datetime.now(datetime.timezone.utc)
-            self.state = True
+
+class UserBonuses(Base):
+    __tablename__ = 'user_bonuses'
+    id = Column('id', Integer, primary_key=True)
+    user_id = Column('user_id', ForeignKey('users.id'))
+    order_id = Column('order_id', ForeignKey('orders.id'))
+    creation_date = Column('creation_date', DateTime)
+    state = Column('state', Boolean)
+    amount = Column('amount', Float)
+
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
+        self.creation_date = datetime.datetime.now(datetime.timezone.utc)
+        self.state = True
+
 
 # user cart positions
 class UserCartPositions(Base):
@@ -410,10 +442,12 @@ class UserCartPositions(Base):
     temp_cart_uid = Column('temp_cart_uid', String(300))
 
     user_cart_position_product_data = relationship('Products', backref="user_cart_position_product_data")
+
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
-        self.temp_cart_uid =  str(uuid.uuid4())
-        self.need_invoice=False
+        self.temp_cart_uid = str(uuid.uuid4())
+        self.need_invoice = False
+
 
 # user cart states
 class UserCartStates(Base):
@@ -440,28 +474,33 @@ class UserCarts(Base):
         self.creation_date = datetime.datetime.now(datetime.timezone.utc)
         self.cart_state_id = 1
 
-    # user info
+        # user info
+
+
 class UserConfirmationCodes(Base):
-        __tablename__ = 'user_confirmation_codes'
-        id = Column('id', Integer, primary_key=True)
-        user_id = Column('user_id', ForeignKey('users.id'))
-        code =Column('code', String(8))
-        creation_date = Column('creation_date', DateTime)
-        def __init__(self, *args):
-            db_tranformer.transform_constructor_params(self, args)
-            self.creation_date = datetime.datetime.now(datetime.timezone.utc)
-            code = random.randint(1000,9999)
-            self.code = str(code)
+    __tablename__ = 'user_confirmation_codes'
+    id = Column('id', Integer, primary_key=True)
+    user_id = Column('user_id', ForeignKey('users.id'))
+    code = Column('code', String(8))
+    creation_date = Column('creation_date', DateTime)
+
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
+        self.creation_date = datetime.datetime.now(datetime.timezone.utc)
+        code = random.randint(1000, 9999)
+        self.code = str(code)
+
 
 # user favorite products
 class UserFavoriteProducts(Base):
-        __tablename__ = 'user_favorite_products'
-        id = Column('id', Integer, primary_key=True)
-        user_id = Column('user_id', ForeignKey('users.id'))
-        products_ids = Column('products_ids', postgresql.ARRAY(Integer))
+    __tablename__ = 'user_favorite_products'
+    id = Column('id', Integer, primary_key=True)
+    user_id = Column('user_id', ForeignKey('users.id'))
+    products_ids = Column('products_ids', postgresql.ARRAY(Integer))
 
-        def __init__(self, *args):
-            db_tranformer.transform_constructor_params(self, args)
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
+
 
 # user info
 class UserInfo(Base):
@@ -506,6 +545,7 @@ class UserRoleRoutes(Base):
     requests_route_access = Column('requests_route_access', Boolean)
 
     related_user_roles = relationship('UserRoles', backref="user_role_route_access")
+
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
 
@@ -518,6 +558,7 @@ class UserRoles(Base):
     title = Column('title', String(64))
 
     related_users = relationship('Users', backref="user_role_data")
+
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
 
@@ -532,9 +573,10 @@ class Users(Base):
     lock_state = Column('lock_state', Boolean)
 
     related_user_login = relationship('UserLogins', backref="user_data")
-    #client_data = relationship('Clients', backref="client_data")
 
-    #order_user_data = relationship('Orders', backref = "order_user_data")
+    # client_data = relationship('Clients', backref="client_data")
+
+    # order_user_data = relationship('Orders', backref = "order_user_data")
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
 
@@ -551,7 +593,7 @@ class ViewSettings(Base):
     show_badge_discount = Column('show_badge_discount', Boolean)
     show_badge_stock = Column('show_badge_stock', Boolean)
     show_badge_partners = Column('show_badge_partners', Boolean)
-    default_slider_image = Column('default_slider_image',Integer)
+    default_slider_image = Column('default_slider_image', Integer)
     slider_images = Column('slider_images', postgresql.ARRAY(Integer))
     recomendation_elements = Column('recomendation_elements', postgresql.ARRAY(Integer))
     brand_elements = Column('brand_elements', postgresql.ARRAY(Integer))
