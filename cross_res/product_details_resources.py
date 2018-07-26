@@ -1,4 +1,4 @@
-from models.db_models.models import Products, ProductComments, Attachments,Orders,OrderPositions
+from models.db_models.models import Products, ProductComments, Attachments,Orders,OrderPositions,BrandsCatalog,PartnersCatalog
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -13,6 +13,17 @@ ROUTE = "/productDetails"
 END_POINT = "product-details"
 
 # NESTED SCHEMA FIELDS
+brand_data_fields = {
+    'id':fields.Integer,
+    'name': fields.String
+}
+
+partner_data_fields = {
+    'id':fields.Integer,
+    'name': fields.String
+}
+
+
 currency_data_fields = {
     'id': fields.Integer,
     'system_name': fields.String,
@@ -99,7 +110,9 @@ output_fields = {
     'not_show_in_catalog': fields.Boolean,
     'stock_text': fields.String,
     'brand_id': fields.Integer,
+    'brand_data':fields.Nested(brand_data_fields),
     'partner_id': fields.Integer,
+    'partner_data':fields.Nested(partner_data_fields),
     'currency_id': fields.Integer,
     'unit_id': fields.Integer,
     'default_image_id': fields.Integer,
@@ -138,13 +151,20 @@ class ProductDetailsResource(Resource):
             args = parser.parse_args()
             if (len(args) == 0):
                 abort(400, message='Arguments not found')
-            user_id = args['user_id']
-            product_id = args['product_id']
+            user_id = int(args['user_id'])
+            product_id = int(args['product_id'])
             user_action_logging.log_user_actions(ROUTE, user_id, action_type)
             product = session.query(Products).filter(Products.id == product_id).first()
             # products = products.
             if not product:
                 abort(400, message='Ошибка получения данных. Данные не найдены')
+
+            if (product.brand_id!=None):
+                product.brand_data = session.query(BrandsCatalog).filter(BrandsCatalog.id==product.brand_id).first()
+
+            if (product.partner_id != None):
+                product.partner_data = session.query(PartnersCatalog).filter(PartnersCatalog.id == product.partner_id).first()
+
 
             product.can_comments =False
 
@@ -152,8 +172,15 @@ class ProductDetailsResource(Resource):
 
             for order in orders:
                 order_positions = session.query(OrderPositions).filter(
-                    and_
-                )
+                    and_(
+                        OrderPositions.order_id == order.id,
+                        OrderPositions.product_id == product.id
+                    )
+                ).first()
+
+                if (order_positions!=None):
+                    product.can_comments =True
+                    break
 
 
             comments = session.query(ProductComments).filter(

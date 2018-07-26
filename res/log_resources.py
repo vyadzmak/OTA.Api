@@ -27,6 +27,9 @@ class LogResource(Resource):
         self.end_point = END_POINT
         pass
 
+
+
+
     @marshal_with(output_fields)
     def get(self, id):
         entity = session.query(MODEL).filter(MODEL.id == id).first()
@@ -68,6 +71,17 @@ class LogListResource(Resource):
         self.end_point = END_POINT+'-list'
         pass
 
+    def clean_log_by_condition(self):
+        try:
+            logs = session.query(Log).all()
+
+            if (len(logs)>5000):
+                session.query(Log).delete()
+                session.commit()
+            pass
+        except Exception as e:
+            session.rollback()
+
     @marshal_with(output_fields)
     def get(self):
         entities = session.query(MODEL).all()
@@ -76,6 +90,7 @@ class LogListResource(Resource):
     @marshal_with(output_fields)
     def post(self):
         try:
+            self.clean_log_by_condition()
             json_data = request.get_json(force=True)
             entity = MODEL(json_data)
             session.add(entity)

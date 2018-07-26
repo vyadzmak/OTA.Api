@@ -85,6 +85,7 @@ from cross_res.user_bonuses_resources import *
 from cross_res.close_user_bonuses_resources import *
 from cross_res.products_recommendations_catalog_resources import *
 from cross_res.repeat_order_resources import *
+from cross_res.product_users_comments_resources import *
 #[resource_class]
 api_resources_crud =[
     AdminSettingsResource,
@@ -214,7 +215,8 @@ api_resources_cross =[
     UserBonusesDetailsResource,
     CloseUserBonusesResource,
     ProductsRecommendationsCatalogResource,
-    RepeatOrderResource
+    RepeatOrderResource,
+    ProductUsersCommentsResource
 ]
 def init_single_resource(api, resource, route, endpoint):
     api.add_resource(resource, route, endpoint=endpoint)
