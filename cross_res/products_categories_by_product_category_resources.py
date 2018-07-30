@@ -1,4 +1,4 @@
-from models.db_models.models import ProductCategories, Products
+from models.db_models.models import ProductCategories, Products, ProductCategoryPositions
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -107,6 +107,18 @@ class ProductsCategoriesByProductCategoryResource(Resource):
                 if (not sub_cats):
                     continue
                 category.internal_categories_count = len(sub_cats)
+
+            product_category_position = session.query(ProductCategoryPositions) \
+                .filter(ProductCategoryPositions.parent_category_id == category_id).first()
+            if product_category_position is not None:
+                positioned_categories = {x: x for x in product_category_position.child_category_positions}
+                other_categories = []
+                for cat in product_categories:
+                    if cat.id in product_category_position.child_category_positions:
+                        positioned_categories[cat.id] = cat
+                    else:
+                        other_categories.append(cat)
+                product_categories = list(positioned_categories.values()) + other_categories
 
             return product_categories
         except Exception as e:

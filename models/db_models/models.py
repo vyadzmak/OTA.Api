@@ -602,3 +602,51 @@ class ViewSettings(Base):
 
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
+
+
+# product category positions
+class ProductCategoryPositions(Base):
+    __tablename__ = 'product_category_positions'
+    id = Column('id', Integer, primary_key=True)
+    parent_category_id = Column('parent_category_id', ForeignKey('product_categories.id'))
+    child_category_positions = Column('child_category_positions', postgresql.ARRAY(Integer))
+
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
+
+
+# products positions
+class ProductsPositions(Base):
+    __tablename__ = 'products_positions'
+    id = Column('id', Integer, primary_key=True)
+    category_id = Column('category_id', ForeignKey('product_categories.id'))
+    products_positions = Column('products_positions', postgresql.ARRAY(Integer))
+
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
+
+
+# message contents
+class MessageContents(Base):
+    __tablename__ = 'message_contents'
+    id = Column('id', Integer, primary_key=True)
+    user_sender_id = Column('user_sender_id', ForeignKey('users.id'))
+    creation_date = Column('creation_date', DateTime)
+    title = Column('title', String(500))
+    message = Column('message', String(5000))
+    is_popup = Column('is_popup', Boolean)
+
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
+
+
+# messages
+class Messages(Base):
+    __tablename__ = 'messages'
+    id = Column('id', Integer, primary_key=True)
+    receiver_user_id = Column('receiver_user_id', ForeignKey('users.id'))
+    is_read = Column('is_read', Boolean)
+    message_content_id = Column('category_id', ForeignKey('message_contents.id'))
+
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)

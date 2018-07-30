@@ -1,4 +1,4 @@
-from models.db_models.models import Products, ProductComments,UserCarts,UserCartPositions
+from models.db_models.models import Products, ProductComments,UserCarts,UserCartPositions,ProductsPositions
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -148,10 +148,18 @@ class ProductsByProductCategoryResource(Resource):
                     product.comments_count =comments_count
                     product.rate =round((total_rate/comments_count),2)
 
-
-
-
-            #products.internal_products_count = len(products)
+            product_position = session.query(ProductsPositions)\
+                .filter(ProductsPositions.category_id == category_id).first()
+            if product_position is not None:
+                positioned_products = {x: x for x in product_position.products_positions}
+                other_prods = []
+                for prod in products:
+                    if prod.id in product_position.products_positions:
+                        positioned_products[prod.id] = prod
+                    else:
+                        other_prods.append(prod)
+                products = list(positioned_products.values())+other_prods
+            # products.internal_products_count = len(products)
 
             return products
         except Exception as e:

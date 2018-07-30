@@ -18,11 +18,13 @@ from res.orders_resources import *
 from res.partners_catalog_resources import *
 from res.product_categories_resources import *
 from res.products_resources import *
+from res.products_positions_resources import *
+from res.product_category_positions_resources import *
 from res.settings_resources import *
 from res.unit_catalog_resources import *
 from res.user_cart_states_resources import *
 from res.user_carts_resources import *
-from res.user_cart_positions_resources import  *
+from res.user_cart_positions_resources import *
 from res.user_confirmation_codes_resources import *
 from res.user_info_resources import *
 from res.user_logins_resources import *
@@ -37,7 +39,7 @@ from res.attachment_optimized_view_resources import *
 from res.product_comments_resources import *
 from res.user_favorite_products_resources import *
 from res.user_bonuses_resources import *
-#cross resourcse
+# cross resourcse
 from cross_res.user_auth_resources import *
 from cross_res.route_admin_general_resources import *
 from cross_res.route_admin_users_resources import *
@@ -86,8 +88,11 @@ from cross_res.close_user_bonuses_resources import *
 from cross_res.products_recommendations_catalog_resources import *
 from cross_res.repeat_order_resources import *
 from cross_res.product_users_comments_resources import *
-#[resource_class]
-api_resources_crud =[
+from cross_res.product_category_positions_by_product_category_resources import *
+from cross_res.products_positions_by_product_category_resources import *
+
+# [resource_class]
+api_resources_crud = [
     AdminSettingsResource,
     AdminSettingsListResource,
     AreaCatalogResource,
@@ -125,6 +130,13 @@ api_resources_crud =[
     ProductCategoriesListResource,
     ProductCommentsResource,
     ProductCommentsListResource,
+
+    ProductCategoryPositionsResource,
+    ProductCategoryPositionsListResource,
+    ProductsPositionsResource,
+    ProductsPositionsListResource,
+    ProductsPositionsByProductCategoryResource,
+    ProductCategoryPositionsByProductCategoryResource,
 
     ProductsResource,
     ProductsListResource,
@@ -165,9 +177,8 @@ api_resources_crud =[
     ViewSettingsListResource
 ]
 
-
-#[resource_class]
-api_resources_cross =[
+# [resource_class]
+api_resources_cross = [
     UserAuthResource,
     RouteAdminGeneralResource,
     RouteAdminUsersResource,
@@ -218,9 +229,12 @@ api_resources_cross =[
     RepeatOrderResource,
     ProductUsersCommentsResource
 ]
+
+
 def init_single_resource(api, resource, route, endpoint):
     api.add_resource(resource, route, endpoint=endpoint)
     pass
+
 
 def init_api_resources(api):
     for crud_resource in api_resources_crud:
