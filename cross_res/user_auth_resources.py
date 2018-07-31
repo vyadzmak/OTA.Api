@@ -52,7 +52,6 @@ output_fields = {
     'no_image_url': fields.String,
     'no_avatar_url': fields.String,
     'thumbs_avatar_path': fields.String
-
 }
 
 

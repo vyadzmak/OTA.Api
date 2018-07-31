@@ -34,7 +34,8 @@ user_data_fields = {
 comment_fields = {
     'id': fields.Integer,
     'user_id':fields.Integer,
-    'creation_date': fields.DateTime,
+    'creation_date': fields.String(
+        attribute=lambda x: x.creation_date.strftime("%Y-%m-%d %H:%M") if x.creation_date is not None else ''),
     'comment_text':fields.String,
     'rate':fields.Float,
     'is_delete':fields.Boolean,

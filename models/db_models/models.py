@@ -656,3 +656,21 @@ class Messages(Base):
 
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
+
+
+# events
+class Events(Base):
+    __tablename__ = 'events'
+    id = Column('id', Integer, primary_key=True)
+    user_creator_id = Column('user_creator_id', ForeignKey('users.id'))
+    product_id = Column('product_id', ForeignKey('products.id'))
+    end_date = Column('end_date', DateTime)
+    count_days_notifications = Column('count_days_notifications', Integer)
+    state = Column('state', Boolean)
+    message = Column('message', String(5000))
+
+    user_data = relationship('Users', backref="events_user_data")
+    product_data = relationship('Products', backref="events_product_data")
+
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)

@@ -9,7 +9,7 @@ from res.client_info_resources import *
 from res.client_types_resources import *
 from res.clients_resources import *
 from res.currency_catalog_resources import *
-
+from res.events_resources import *
 from res.log_resources import *
 from res.message_contents_resources import *
 from res.messages_resources import *
@@ -52,6 +52,7 @@ from cross_res.route_admin_settings_resources import *
 from cross_res.attacments_info_resources import *
 from cross_res.client_info_by_client_resources import *
 from cross_res.client_addresses_by_client_resources import *
+from cross_res.events_by_user import *
 from cross_res.products_categories_by_product_category_resources import *
 from cross_res.products_by_product_category_resources import *
 from cross_res.route_catalog_products_general_resources import *
@@ -119,6 +120,8 @@ api_resources_crud = [
     ClientsListResource,
     CurrencyCatalogResource,
     CurrencyCatalogListResource,
+    EventsResource,
+    EventsListResource,
     LogResource,
     LogListResource,
     MessageContentsResource,
@@ -197,6 +200,7 @@ api_resources_cross = [
     AttachmentsInfoResource,
     ClientInfoByClientResource,
     ClientAddressesByClientResource,
+    EventsByUserResource,
     ProductsCategoriesByProductCategoryResource,
     ProductsByProductCategoryResource,
     RouteCatalogProductsGeneralResource,
