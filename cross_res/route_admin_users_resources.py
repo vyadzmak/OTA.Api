@@ -2,6 +2,7 @@ from models.db_models.models import AdminSettings, Log, Users,UserLogins, UserIn
 from db.db import session
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
 import modules.db_help_modules.user_action_logging_module as user_action_logging
+import models.app_models.setting_models.setting_model as settings
 from sqlalchemy import and_
 import base64
 import datetime
@@ -74,7 +75,6 @@ class RouteAdminUsersResource(Resource):
     @marshal_with(output_fields)
     def get(self):
         try:
-            owner_client_id = 3
             action_type='GET'
             parser = reqparse.RequestParser()
             parser.add_argument('user_id')
@@ -86,7 +86,7 @@ class RouteAdminUsersResource(Resource):
             user_action_logging.log_user_actions(ROUTE,user_id, action_type)
 
             # check login
-            owner_users = session.query(Users).filter(Users.client_id==owner_client_id).order_by(Users.id.desc()).all()
+            owner_users = session.query(Users).filter(Users.client_id==settings.OWNER_CLIENT_ID).order_by(Users.id.desc()).all()
             for user in owner_users:
                 u_id = user.id
                 login = session.query(UserLogins).filter(UserLogins.user_id==u_id).first()

@@ -9,7 +9,10 @@ from res.client_info_resources import *
 from res.client_types_resources import *
 from res.clients_resources import *
 from res.currency_catalog_resources import *
+
 from res.log_resources import *
+from res.message_contents_resources import *
+from res.messages_resources import *
 from res.order_position_states_resources import *
 from res.order_positions_resources import *
 from res.order_states_resources import *
@@ -77,6 +80,8 @@ from cross_res.add_cart_position_to_cart_resources import *
 from cross_res.manage_user_cart_details_resources import *
 from  cross_res.make_user_order_resources import *
 from cross_res.manage_favorite_products import *
+from cross_res.messages_by_message_content_resources import *
+from cross_res.messages_by_user_resources import *
 from cross_res.user_profile_resources import *
 from cross_res.user_cart_product_count_resources import *
 from cross_res.update_user_profile_resources import *
@@ -116,6 +121,10 @@ api_resources_crud = [
     CurrencyCatalogListResource,
     LogResource,
     LogListResource,
+    MessageContentsResource,
+    MessageContentsListResource,
+    MessagesResource,
+    MessagesListResource,
     OrderPositionStatesResource,
     OrderPositionStatesListResource,
     OrderPositionsResource,
@@ -203,6 +212,8 @@ api_resources_cross = [
     OrderPositionsByOrderResource,
     ManageUsersResource,
     ManageUsersListResource,
+    MessagesByMessageContentResource,
+MessagesByUserResource,
     UsersDetailsResource,
     QuickUserRegistrationResource,
     RouteViewSettingsResource,

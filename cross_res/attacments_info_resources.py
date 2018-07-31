@@ -55,7 +55,6 @@ class AttachmentsInfoResource(Resource):
             user_id = args['user_id']
             attachments_ids = args['attachments_ids']
             user_action_logging.log_user_actions(ROUTE,user_id, action_type)
-            #clients = session.query(Clients).filter(Clients.id!=owner_client_id).order_by(Clients.id.desc()).all()
             attachments =[]
             attachments_ids =[int(s) for s in attachments_ids.split(',')]
             for id in attachments_ids:

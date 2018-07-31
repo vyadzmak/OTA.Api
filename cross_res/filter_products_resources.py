@@ -1,4 +1,5 @@
-from models.db_models.models import Products, ProductComments, ViewSettings,UserFavoriteProducts,OrderPositions,UserCartPositions,UserCarts
+from models.db_models.models import Products, ProductComments, ViewSettings, UserFavoriteProducts, \
+    OrderPositions, UserCartPositions, UserCarts, PartnersCatalog, BrandsCatalog
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -6,7 +7,8 @@ import modules.db_model_tranformer_modules.db_model_transformer_module as db_tra
 import modules.db_help_modules.user_action_logging_module as user_action_logging
 from operator import itemgetter
 from sqlalchemy import desc
-from sqlalchemy import and_
+from sqlalchemy import and_, or_
+
 # PARAMS
 ENTITY_NAME = "Filter Products"
 MODEL = Products
@@ -70,7 +72,7 @@ output_fields = {
     'rate': fields.Float,
     'product_unit_data': fields.Nested(unit_data_fields),
     'product_currency_data': fields.Nested(currency_data_fields),
-    'count':fields.Integer,
+    'count': fields.Integer,
     'product_alt_unit_data': fields.Nested(unit_data_fields),
     'alt_amount': fields.Float,
     'alt_unit_value': fields.Float,
@@ -86,7 +88,7 @@ class FilterProductResource(Resource):
         self.end_point = END_POINT
         pass
 
-    def get_user_cart_argument(self,args):
+    def get_user_cart_argument(self, args):
         try:
             user_cart_id = args['user_cart_id']
             return int(user_cart_id)
@@ -96,7 +98,7 @@ class FilterProductResource(Resource):
     # filter by brand
     def filter_by_brand(self, brand_id):
         try:
-            products = session.query(Products).filter(Products.brand_id==brand_id).all()
+            products = session.query(Products).filter(Products.brand_id == brand_id).all()
             return products
         except Exception as e:
             return None
@@ -111,56 +113,59 @@ class FilterProductResource(Resource):
             return None
 
             # filter by partner
+
     def filter_by_all_partners(self):
-                try:
-                    products = session.query(Products).filter(Products.partner_id !=None).all()
-                    return products
-                    pass
-                except Exception as e:
-                    return None
+        try:
+            products = session.query(Products).filter(Products.partner_id != None).all()
+            return products
+            pass
+        except Exception as e:
+            return None
 
             # filter by discount
-    def filter_by_discount(self):
-                try:
-                    products = session.query(Products).filter(Products.is_discount_product==True).all()
-                    return products
-                    pass
-                except Exception as e:
-                    return None
 
-                    # filter by discount
+    def filter_by_discount(self):
+        try:
+            products = session.query(Products).filter(Products.is_discount_product == True).all()
+            return products
+            pass
+        except Exception as e:
+            return None
+
+            # filter by discount
+
     def filter_by_stock(self):
-                        try:
-                            products = session.query(Products).filter(Products.is_stock_product == True).all()
-                            return products
-                            pass
-                        except Exception as e:
-                            return None
+        try:
+            products = session.query(Products).filter(Products.is_stock_product == True).all()
+            return products
+            pass
+        except Exception as e:
+            return None
 
     # filter by favorites
     def filter_by_favorites(self, user_id):
-            try:
-                user_favorite_products = session.query(UserFavoriteProducts).filter(
-                    UserFavoriteProducts.user_id == user_id).first()
+        try:
+            user_favorite_products = session.query(UserFavoriteProducts).filter(
+                UserFavoriteProducts.user_id == user_id).first()
 
-                if (not user_favorite_products):
-                    abort(400, message="Not found favorite products")
+            if (not user_favorite_products):
+                abort(400, message="Not found favorite products")
 
-                if (not user_favorite_products):
-                    abort(400, message="Not found favorite products")
+            if (not user_favorite_products):
+                abort(400, message="Not found favorite products")
 
-                products = []
+            products = []
 
-                for favorite_product_id in user_favorite_products.products_ids:
-                    product = session.query(Products).filter(Products.id == favorite_product_id).first()
+            for favorite_product_id in user_favorite_products.products_ids:
+                product = session.query(Products).filter(Products.id == favorite_product_id).first()
 
-                    if (not product):
-                        continue
+                if (not product):
+                    continue
 
-                    products.append(product)
-                return products
-            except Exception as e:
-                return None
+                products.append(product)
+            return products
+        except Exception as e:
+            return None
 
     # filter by recommendations
     def filter_by_recommendations(self):
@@ -170,13 +175,13 @@ class FilterProductResource(Resource):
             if (not view_settings):
                 return None
             products = []
-            rec_elements =view_settings.recomendation_elements
+            rec_elements = view_settings.recomendation_elements
 
             if (not rec_elements):
                 return None
 
             for rec_element in rec_elements:
-                product = session.query(Products).filter(Products.id==rec_element).first()
+                product = session.query(Products).filter(Products.id == rec_element).first()
 
                 if (not product):
                     continue
@@ -188,66 +193,77 @@ class FilterProductResource(Resource):
         except Exception as e:
             return None
 
-
     # filter by name
-    def filter_by_name(self,name):
-            try:
-                r_name = '%'+name+'%'
-                products = session.query(Products).filter(Products.name.ilike(r_name)).all()
-                return products
-            except Exception as e:
-                return None
+    def filter_by_name(self, name):
+        try:
+            r_name = '%' + name + '%'
+            products = session.query(Products).filter(Products.name.ilike(r_name)).all()
+            return products
+        except Exception as e:
+            return None
 
 
-                # filter by name
+            # filter by name
 
     def filter_by_popular(self):
         try:
-            limit =10
+            limit = 10
 
             order_positions = session.query(OrderPositions).all()
 
             p_ids = []
             for order_position in order_positions:
-                if (order_position.product_id in p_ids==True):
+                if (order_position.product_id in p_ids == True):
                     continue
                 else:
                     p_ids.append(order_position.product_id)
                 pass
 
-            f_products =[]
+            f_products = []
 
             for p_id in p_ids:
 
-                ps = session.query(OrderPositions).filter(OrderPositions.product_id==p_id).all()
+                ps = session.query(OrderPositions).filter(OrderPositions.product_id == p_id).all()
 
-                count =0
+                count = 0
 
                 for p in ps:
-                    count+=p.count
-                f_products.append([p_id,count])
+                    count += p.count
+                f_products.append([p_id, count])
 
             sorted(f_products, key=itemgetter(1))
             result_products = []
-            counter=0
+            counter = 0
             for pr in f_products:
-                if (counter>=limit):
+                if (counter >= limit):
                     break
 
-                p_id =pr[0]
+                p_id = pr[0]
 
-                product = session.query(Products).filter(Products.id==p_id).first()
+                product = session.query(Products).filter(Products.id == p_id).first()
 
                 if (not product):
                     continue
 
                 result_products.append(product)
 
-
-
             # products = session.query(Products).filter(Products.name.ilike(r_name)).all()
             # return products
             return result_products
+        except Exception as e:
+            return None
+
+    # filter_by_product_name_or_partner_name
+    def filter_by_product_name_or_partner_name(self, name):
+        try:
+            r_name = '%' + name + '%'
+            products = session.query(Products) \
+                .outerjoin(PartnersCatalog) \
+                .outerjoin(BrandsCatalog) \
+                .filter(or_(Products.name.ilike(r_name),
+                            PartnersCatalog.name.ilike(r_name),
+                            BrandsCatalog.name.ilike(r_name))).all()
+            return products
         except Exception as e:
             return None
 
@@ -274,17 +290,17 @@ class FilterProductResource(Resource):
             # session.query(Products).filter(Products.category_id==category_id).order_by(desc(Products.id)).all()
             # products = products.
 
-            if (str(filter_parameter)=='1'):
+            if (str(filter_parameter) == '1'):
                 products = self.filter_by_brand(filter_value)
-            elif (str(filter_parameter)=='2'):
+            elif (str(filter_parameter) == '2'):
                 products = self.filter_by_partner(filter_value)
             elif (str(filter_parameter) == '3'):
                 products = self.filter_by_favorites(user_id)
             elif (str(filter_parameter) == '4'):
                 products = self.filter_by_recommendations()
-            elif (str(filter_parameter)=='5'):
+            elif (str(filter_parameter) == '5'):
                 products = self.filter_by_name(filter_value)
-            elif (str(filter_parameter)=='6'):
+            elif (str(filter_parameter) == '6'):
                 products = self.filter_by_discount()
             elif (str(filter_parameter) == '7'):
                 products = self.filter_by_stock()
@@ -292,12 +308,14 @@ class FilterProductResource(Resource):
                 products = self.filter_by_all_partners()
             elif (str(filter_parameter) == '9'):
                 products = self.filter_by_popular()
+            elif (str(filter_parameter) == '10'):
+                products = self.filter_by_product_name_or_partner_name(filter_value)
 
             if not products:
                 abort(400, message='Ошибка получения данных. Данные не найдены')
             for product in products:
-                if (user_cart_id==-1):
-                    product.count =1
+                if (user_cart_id == -1):
+                    product.count = 1
                 else:
                     user_cart = session.query(UserCarts).filter(UserCarts.id == user_cart_id).first()
                     check_user_cart_positions = session.query(UserCartPositions).filter(and_(
@@ -308,7 +326,7 @@ class FilterProductResource(Resource):
                     if (not check_user_cart_positions):
                         product.count = 1
                     else:
-                        product.count=check_user_cart_positions.count
+                        product.count = check_user_cart_positions.count
                     pass
 
                 comments = session.query(ProductComments).filter(

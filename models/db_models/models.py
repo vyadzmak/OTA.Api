@@ -636,8 +636,12 @@ class MessageContents(Base):
     message = Column('message', String(5000))
     is_popup = Column('is_popup', Boolean)
 
+    receivers = relationship('Messages', backref="message_content")
+    user_data = relationship('Users', backref="message_contents_user_data")
+
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
+        self.creation_date = datetime.datetime.now(datetime.timezone.utc)
 
 
 # messages
@@ -646,7 +650,9 @@ class Messages(Base):
     id = Column('id', Integer, primary_key=True)
     receiver_user_id = Column('receiver_user_id', ForeignKey('users.id'))
     is_read = Column('is_read', Boolean)
-    message_content_id = Column('category_id', ForeignKey('message_contents.id'))
+    message_content_id = Column('message_content_id', ForeignKey('message_contents.id'))
+
+    user_data = relationship('Users', backref="messages_user_data")
 
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)

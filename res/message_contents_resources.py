@@ -1,27 +1,34 @@
-from models.db_models.models import Messages, MessageContents
+from models.db_models.models import Messages, MessageContents, Users
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
 import modules.db_model_tranformer_modules.db_model_transformer_module as db_transformer
+import models.app_models.setting_models.setting_model as settings
 
 #PARAMS
-ENTITY_NAME = "Messages"
-MODEL = Messages
-ROUTE ="/messages"
-END_POINT = "messages"
+ENTITY_NAME = "MessageContents"
+MODEL = MessageContents
+ROUTE ="/messageContents"
+END_POINT = "messageContents"
 
 #NESTED SCHEMA FIELDS
-
+# user_fields = {
+#     'name': fields.String(attribute=lambda x: x.last_name + ' ' + x.first_name)
+# }
 #OUTPUT SCHEMA
 output_fields = {
     'id': fields.Integer,
-    'receiver_user_id':fields.Integer,
-    'is_read': fields.Boolean,
+    'user_sender_id': fields.Integer,
+    'creation_date':fields.DateTime,
+    'title': fields.String,
+    'message': fields.String,
+    'is_popup': fields.Boolean,
+    # 'user_data': fields.Nested(user_fields)
     'name': fields.String(attribute=lambda x: x.user_data.name if x.user_data is not None else '')
 }
 
 #API METHODS FOR SINGLE ENTITY
-class MessagesResource(Resource):
+class MessageContentsResource(Resource):
     def __init__(self):
         self.route = ROUTE+'/<int:id>'
         self.end_point = END_POINT
@@ -65,7 +72,7 @@ class MessagesResource(Resource):
             abort(400, message="Error while update "+ENTITY_NAME)
 
 #API METHODS FOR LIST ENTITIES
-class MessagesListResource(Resource):
+class MessageContentsListResource(Resource):
     def __init__(self):
         self.route = ROUTE
         self.end_point = END_POINT+'-list'
@@ -80,9 +87,29 @@ class MessagesListResource(Resource):
     def post(self):
         try:
             json_data = request.get_json(force=True)
+            send_all = json_data.get('send_all', False)
+
             entity = MODEL(json_data)
             session.add(entity)
             session.commit()
+
+            if send_all:
+                users = session.query(Users.id).filter(Users.client_id != settings.OWNER_CLIENT_ID).all()
+                session.bulk_insert_mappings(Messages, [
+                    {'receiver_user_id': user[0],
+                     'message_content_id': entity.id,
+                     'is_read': False}
+                    for user in users
+                ])
+                session.commit()
+            else:
+                session.bulk_insert_mappings(Messages, [
+                    {'receiver_user_id': user_id,
+                     'message_content_id': entity.id,
+                     'is_read': False}
+                    for user_id in json_data['receivers']
+                ])
+                session.commit()
             return entity, 201
         except Exception as e:
             session.rollback()
