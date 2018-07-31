@@ -51,7 +51,8 @@ output_fields = {
     'last_login_date':fields.DateTime,
     'no_image_url': fields.String,
     'no_avatar_url': fields.String,
-    'thumbs_avatar_path': fields.String
+    'thumbs_avatar_path': fields.String,
+    'events_count':fields.Integer(default=0)
 }
 
 
