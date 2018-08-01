@@ -96,7 +96,8 @@ from cross_res.repeat_order_resources import *
 from cross_res.product_users_comments_resources import *
 from cross_res.product_category_positions_by_product_category_resources import *
 from cross_res.products_positions_by_product_category_resources import *
-
+from cross_res.auth_main_info_resources import *
+from cross_res.check_minimum_sum_cart_by_partners import *
 # [resource_class]
 api_resources_crud = [
     AdminSettingsResource,
@@ -217,7 +218,7 @@ api_resources_cross = [
     ManageUsersResource,
     ManageUsersListResource,
     MessagesByMessageContentResource,
-MessagesByUserResource,
+    MessagesByUserResource,
     UsersDetailsResource,
     QuickUserRegistrationResource,
     RouteViewSettingsResource,
@@ -242,7 +243,9 @@ MessagesByUserResource,
     CloseUserBonusesResource,
     ProductsRecommendationsCatalogResource,
     RepeatOrderResource,
-    ProductUsersCommentsResource
+    ProductUsersCommentsResource,
+    AuthMainInfoResource,
+    CheckMinimumSumCartByPartnersResource
 ]
 
 

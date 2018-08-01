@@ -1,5 +1,5 @@
 from models.db_models.models import UserLogins, Orders, Settings, UserInfo, Attachments, \
-    ViewSettings, Products, BrandsCatalog, PartnersCatalog, UserFavoriteProducts, ProductComments
+    ViewSettings, Products, BrandsCatalog, PartnersCatalog, UserFavoriteProducts, ProductComments,Users
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -11,9 +11,9 @@ import models.app_models.setting_models.setting_model as settings
 import urllib.parse
 
 # PARAMS
-ENTITY_NAME = "Mobile User Auth"
-ROUTE = "/mobileUserAuth"
-END_POINT = "mobile-user-auth"
+ENTITY_NAME = "Auth Main Info"
+ROUTE = "/authMainInfo"
+END_POINT = "auth-main-info"
 
 # NESTED SCHEMA FIELDS
 default_image_data_partners = {
@@ -193,7 +193,7 @@ output_fields = {
 
 
 # API METHODS FOR SINGLE ENTITY
-class MobileUserAuthResource(Resource):
+class AuthMainInfoResource(Resource):
     def __init__(self):
         self.route = ROUTE
         self.end_point = END_POINT
@@ -204,22 +204,16 @@ class MobileUserAuthResource(Resource):
         error_message = ''
         try:
             parser = reqparse.RequestParser()
-            parser.add_argument('login')
-            parser.add_argument('password')
+            parser.add_argument('user_id')
             args = parser.parse_args()
             if (len(args) == 0):
                 abort(400, message='Arguments not found')
-            login = args['login']
-            password = args['password']
 
-            encrypted_password = str(base64.b64encode(bytes(password, "utf-8")))
-
+            user_id = args['user_id']
             # check login
-            user_login = session.query(UserLogins).filter(and_(
-                UserLogins.login == login,
-                UserLogins.password == encrypted_password)) \
-                .first()
 
+
+            user_login = session.query(UserLogins).filter(UserLogins.user_id==user_id).first()
             if not user_login:
                 error_message = 'Ошибка авторизации. Пользователь с такими данными не найден!'
                 abort(400, message='Ошибка авторизации. Пользователь с такими данными не найден!')

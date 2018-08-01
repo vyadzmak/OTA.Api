@@ -71,6 +71,7 @@ class RepeatOrderResource(Resource):
                 user_cart_position_args['count'] = old_position.count
                 user_cart_position_args['temp_cart_uid'] = str(uuid.uuid4().hex)
                 user_cart_position_args['need_invoice'] =old_position.need_invoice
+                user_cart_position_args['alt_count'] =old_position.alt_count
                 user_cart_position_entity = UserCartPositions(user_cart_position_args)
                 session.add(user_cart_position_entity)
                 session.commit()

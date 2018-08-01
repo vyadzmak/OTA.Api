@@ -440,7 +440,7 @@ class UserCartPositions(Base):
     description = Column('description', String(300))
     need_invoice = Column('need_invoice', Boolean)
     temp_cart_uid = Column('temp_cart_uid', String(300))
-
+    alt_count = Column('alt_count', Float)
     user_cart_position_product_data = relationship('Products', backref="user_cart_position_product_data")
 
     def __init__(self, *args):

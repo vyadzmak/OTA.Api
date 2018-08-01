@@ -64,7 +64,8 @@ class ClientAddressesByClientResource(Resource):
             client_addresses = session.query(ClientAddresses).filter(ClientAddresses.client_id == client_id).all()
 
             if not client_addresses:
-                abort(400, message='Ошибка получения данных. Данные не найдены')
+                return []
+                # abort(400, message='Ошибка получения данных. Данные не найдены')
 
             return client_addresses
         except Exception as e:

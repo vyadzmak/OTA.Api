@@ -149,6 +149,7 @@ class ManageUserCartDetailsResource(Resource):
                 position_args ={}
                 position_args['id'] = position['id']
                 position_args['count'] = position['count']
+                position_args['alt_count'] = position['alt_count']
                 position_args['description'] = position['description']
                 position_args['need_invoice'] = position['need_invoice']
 
@@ -178,6 +179,8 @@ class ManageUserCartDetailsResource(Resource):
 
             for cart_position in user_cart_positions:
                 count = cart_position.count
+                alt_count = cart_position.alt_count
+
                 cart_position.bonus =0
                 product = session.query(Products).filter(Products.id == cart_position.product_id).first()
                 if (currency_id == -1):
@@ -189,6 +192,7 @@ class ManageUserCartDetailsResource(Resource):
                 cart_position.bonuses =0
                 if (cart_position.count!=0):
                     bonus =product.amount* (product.bonus_percent/100)*cart_position.count
+                    bonus+=product.alt_amount*(product.bonus_percent/100)*cart_position.alt_count
                     bonus = round(bonus,2)
                     if (bonus != None):
                         cart_position.bonuses = bonus
@@ -197,21 +201,37 @@ class ManageUserCartDetailsResource(Resource):
                 single_amount = 0
                 if (product.is_discount_product == True):
                     discount_amount = product.discount_amount
+                    alt_discount_amount = product.alt_discount_amount
+
+                    if (discount_amount == 0):
+                        discount_amount = product.amount
+
+                    if (alt_discount_amount == None or alt_discount_amount == 0):
+                        alt_discount_amount = product.alt_amount
 
                     if (discount_amount == 0):
                         discount_amount = product.amount
 
                     single_amount = round(discount_amount * count, 2)
+                    alt_single_amount = round(alt_discount_amount * alt_count, 2)
+
                     total_sum += single_amount
+                    total_sum += alt_single_amount
+
                     total_sum_without_discount += round(product.amount * count, 2)
+                    total_sum_without_discount += round(product.alt_amount * alt_count, 2)
 
                     delta = product.amount - discount_amount
+                    alt_delta = product.alt_amount - alt_discount_amount
 
                     amount_sum += round(delta * count, 2)
+                    amount_sum += round(alt_delta * alt_count, 2)
 
                 else:
                     total_sum += round(product.amount * count, 2)
+                    total_sum += round(product.alt_amount * alt_count, 2)
                     total_sum_without_discount += round(product.amount * count, 2)
+                    total_sum_without_discount += round(product.alt_amount * alt_count, 2)
 
             economy_delta = total_sum_without_discount - amount_sum
             economy_percent = round(100 * (economy_delta / total_sum_without_discount), 2)

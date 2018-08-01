@@ -118,14 +118,17 @@ class MakeUserOrderResource(Resource):
                 order_position_args["order_id"] = order_entity.id
                 order_position_args["product_id"] = cart_position.product_id
                 order_position_args["count"] = cart_position.count
+                order_position_args["alt_count"] = cart_position.alt_count
                 order_position_args["description"] = '-'
                 order_position_args["order_position_state_id"] =1
                 order_position_args["need_invoice"] =cart_position.need_invoice
 
                 product = session.query(Products).filter(Products.id==cart_position.product_id).first()
 
-                order_position_args["amount_per_item"] =product.amount
-                order_position_args["amount_per_item_discount"] =product.discount_amount
+                order_position_args["amount_per_item"] = product.amount
+                order_position_args["amount_per_item_discount"] = product.discount_amount
+                order_position_args["alt_amount_per_item"] = product.alt_amount
+                order_position_args["alt_amount_per_item_discount"] = product.alt_discount_amount
 
                 total_amount =0
                 if (product.is_discount_product==True):

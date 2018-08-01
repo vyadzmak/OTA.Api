@@ -17,6 +17,7 @@ END_POINT = "user-cart-product-details"
 # OUTPUT SCHEMA
 output_fields = {
     'product_count': fields.Integer,
+    'alt_product_count':fields.Integer
 }
 
 #API METHODS FOR SINGLE ENTITY
@@ -46,10 +47,10 @@ class UserCartProductCountResource(Resource):
                 UserCartPositions.product_id==product_id,
                 UserCartPositions.user_cart_id==user_cart_id)).first()
             if (not products):
-                response = {'product_count':1}
+                response = {'product_count':1, 'alt_product_count':0}
                 return  response
-
-            response = {'product_count':int(products.count)}
+            alt_product_count = int(products.alt_count)
+            response = {'product_count':int(products.count), 'alt_product_count':alt_product_count}
 
 
             return response
