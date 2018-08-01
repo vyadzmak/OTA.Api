@@ -10,20 +10,24 @@ MODEL = OrderPositions
 ROUTE ="/orderPositions"
 END_POINT = "order-positions"
 
-#NESTED SCHEMA FIELDS
-product_data_fields ={
+# NESTED SCHEMA FIELDS
+product_data_fields = {
     'id': fields.Integer,
-    'name':fields.String,
-    'category_id':fields.Integer,
-    'product_code':fields.String,
-    'amount':fields.Float,
+    'name': fields.String,
+    'category_id': fields.Integer,
+    'product_code': fields.String,
+    'amount': fields.Float,
+    'unit_display_value': fields.String(
+        attribute=lambda x: x.product_unit_data.display_value if x.product_unit_data else ''),
+    'alt_unit_display_value': fields.String(
+        attribute=lambda x: x.product_alt_unit_data.display_value if x.product_alt_unit_data else '')
 }
 
 order_data_fields = {
     'id': fields.Integer,
-    'user_id':fields.Integer,
-    'creation_date':fields.DateTime,
-    'number':fields.String,
+    'user_id': fields.Integer,
+    'creation_date': fields.DateTime,
+    'number': fields.String,
     'executor_id': fields.Integer,
     'processed_date': fields.DateTime,
     'execute_date': fields.DateTime,
@@ -34,25 +38,29 @@ order_data_fields = {
 
 order_position_states_data = {
     'id': fields.Integer,
-    'name':fields.String,
+    'name': fields.String,
     'title': fields.String
 }
-#OUTPUT SCHEMA
+# OUTPUT SCHEMA
 output_fields = {
     'id': fields.Integer,
-    'product_id':fields.Integer,
+    'product_id': fields.Integer,
     'order_id': fields.Integer,
-    'count':fields.Float,
-    'description':fields.String,
-    'need_invoice':fields.Boolean,
-    'order_position_state_id':fields.Integer,
-    'amount_per_item':fields.Float,
-    'amount_per_item_discount':fields.Float,
-    'total_amount':fields.Float,
+    'count': fields.Float,
+    'alt_count': fields.Float,
+    'description': fields.String,
+    'need_invoice': fields.Boolean,
+    'order_position_state_id': fields.Integer,
+    'amount_per_item': fields.Float,
+    'alt_amount_per_item': fields.Float,
+    'amount_per_item_discount': fields.Float,
+    'alt_amount_per_item_discount': fields.Float,
+    'total_amount': fields.Float,
 
-    'product_data':fields.Nested(product_data_fields),
-    'order_data':fields.Nested(order_data_fields),
-    'order_position_states':fields.Nested(order_position_states_data)
+    'product_data': fields.Nested(product_data_fields),
+    'order_data': fields.Nested(order_data_fields),
+    'order_position_states': fields.Nested(order_position_states_data),
+    'bonuses': fields.Float
 }
 
 
