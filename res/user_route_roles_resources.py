@@ -19,7 +19,9 @@ output_fields = {
     'admin_route_access': fields.Boolean,
     'data_settings_route_access': fields.Boolean,
     'catalog_route_access': fields.Boolean,
-    'requests_route_access': fields.Boolean
+    'requests_route_access': fields.Boolean,
+    'messages_route_access': fields.Boolean,
+    'events_route_access': fields.Boolean
 
 }
 

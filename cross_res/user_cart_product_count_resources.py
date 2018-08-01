@@ -1,4 +1,4 @@
-from models.db_models.models import Users, UserLogins,UserInfo,UserCarts,UserCartPositions,Products,CurrencyCatalog
+from models.db_models.models import Users,UnitCatalog, UserLogins,UserInfo,UserCarts,UserCartPositions,Products,CurrencyCatalog
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -46,10 +46,16 @@ class UserCartProductCountResource(Resource):
             products = session.query(UserCartPositions).filter(and_(
                 UserCartPositions.product_id==product_id,
                 UserCartPositions.user_cart_id==user_cart_id)).first()
+
+
             if (not products):
-                response = {'product_count':1, 'alt_product_count':0}
+                response = {'product_count':1, 'alt_product_count':0,'unit_name':'НЕТ','alt_unit_name':'НЕТ'}
                 return  response
+
+
             alt_product_count = int(products.alt_count)
+
+
             response = {'product_count':int(products.count), 'alt_product_count':alt_product_count}
 
 

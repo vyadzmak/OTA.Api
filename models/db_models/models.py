@@ -543,7 +543,8 @@ class UserRoleRoutes(Base):
     data_settings_route_access = Column('data_settings_route_access', Boolean)
     catalog_route_access = Column('catalog_route_access', Boolean)
     requests_route_access = Column('requests_route_access', Boolean)
-
+    messages_route_access = Column('messages_route_access', Boolean)
+    events_route_access = Column('events_route_access', Boolean)
     related_user_roles = relationship('UserRoles', backref="user_role_route_access")
 
     def __init__(self, *args):

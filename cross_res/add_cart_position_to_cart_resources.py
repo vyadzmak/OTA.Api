@@ -132,7 +132,11 @@ class AddCartPositionToCartResource(Resource):
                 if (currency_id==-1):
                     currency_id = product.currency_id
 
+                if (product.alt_discount_amount == None):
+                    product.alt_discount_amount = 0
 
+                if (product.alt_amount == None):
+                    product.alt_amount = 0
 
                 if (not product):
                     continue

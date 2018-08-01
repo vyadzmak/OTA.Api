@@ -80,6 +80,7 @@ user_cart_positions_fields ={
     'id': fields.Integer,
     'product_id': fields.Integer,
     'count': fields.Float,
+    'alt_count': fields.Float,
     'need_invoice': fields.Boolean,
     'description': fields.String,
     'user_cart_id':fields.Integer,
@@ -149,6 +150,11 @@ class UserCartDetailsResource(Resource):
                 if (currency_id == -1):
                     currency_id = product.currency_id
 
+                if (product.alt_discount_amount == None):
+                    product.alt_discount_amount = 0
+
+                if (product.alt_amount == None):
+                    product.alt_amount = 0
                 if (not product):
                     continue
                 single_amount = 0

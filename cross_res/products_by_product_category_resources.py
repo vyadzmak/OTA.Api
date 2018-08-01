@@ -72,6 +72,7 @@ output_fields = {
     'recommended_amount':fields.Float,
     'bonus_percent':fields.Float,
     'count':fields.Integer,
+    'alt_count':fields.Integer,
     'product_alt_unit_data': fields.Nested(unit_data_fields),
     'alt_amount': fields.Float,
     'alt_unit_value': fields.Float,
@@ -120,6 +121,7 @@ class ProductsByProductCategoryResource(Resource):
             for product in products:
                 if (user_cart_id==-1):
                     product.count =1
+                    product.alt_count=0
                 else:
                     user_cart = session.query(UserCarts).filter(UserCarts.id == user_cart_id).first()
                     check_user_cart_positions = session.query(UserCartPositions).filter(and_(
@@ -129,8 +131,11 @@ class ProductsByProductCategoryResource(Resource):
 
                     if (not check_user_cart_positions):
                         product.count = 1
+                        product.alt_count =0
                     else:
                         product.count=check_user_cart_positions.count
+                        product.alt_count=check_user_cart_positions.alt_count
+
                     pass
                 comments = session.query(ProductComments).filter(ProductComments.product_id==product.id and ProductComments.is_delete==False).all()
                 product.comments_count = 0
