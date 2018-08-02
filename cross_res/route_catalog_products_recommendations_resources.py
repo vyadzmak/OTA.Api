@@ -14,17 +14,17 @@ END_POINT = "route-catalog-products-recommendations"
 # NESTED SCHEMA FIELDS
 category_fields = {
     'id': fields.Integer,
-    'name':fields.String
+    'name': fields.String
 }
 # OUTPUT SCHEMA
 output_fields = {
     'id': fields.Integer,
-    'name':fields.String,
-    'category_id':fields.Integer,
-    'user_creator_id':fields.Integer,
-    'product_code':fields.String,
-    'is_recommend':fields.Boolean,
-    #'product_category_data':fields.Nested(category_fields)
+    'name': fields.String,
+    'category_id': fields.Integer,
+    'user_creator_id': fields.Integer,
+    'product_code': fields.String,
+    'is_recommend': fields.Boolean,
+    # 'product_category_data':fields.Nested(category_fields)
 }
 
 
@@ -38,7 +38,7 @@ class RouteCatalogProductsRecommendationsResource(Resource):
     @marshal_with(output_fields)
     def get(self):
         try:
-            action_type='GET'
+            action_type = 'GET'
             parser = reqparse.RequestParser()
             parser.add_argument('user_id')
             parser.add_argument('product_id')
@@ -47,42 +47,39 @@ class RouteCatalogProductsRecommendationsResource(Resource):
                 abort(400, message='Arguments not found')
             user_id = args['user_id']
             product_id = args['product_id']
-            user_action_logging.log_user_actions(ROUTE,user_id, action_type)
-            product = session.query(Products).filter(Products.id==product_id).first()
-            t=0
+            user_action_logging.log_user_actions(ROUTE, user_id, action_type)
+            product = session.query(Products).filter(Products.id == product_id).first()
+            t = 0
 
-            products = session.query(Products).filter(Products.id!=product_id).all()
+            products = session.query(Products).filter(Products.id != product_id, Products.is_delete == False).all()
 
             if not products:
                 abort(400, message='Ошибка получения данных. Данные не найдены')
 
             if (not product):
-
-
                 return products
 
-            recommendations =product.product_recomendations
+            recommendations = product.product_recomendations
 
             if (not recommendations):
-                #если у продукта нет рекомендаций то выводим весь список товаров
-                rec_products = session.query(Products).filter(Products.id != product_id).all()
+                # если у продукта нет рекомендаций то выводим весь список товаров
+                rec_products = session.query(Products).filter(Products.id != product_id, Products.is_delete == False).all()
                 for r_product in rec_products:
                     r_product.is_recommend = False
 
                 return rec_products
 
-            if (len(recommendations)>0):
+            if (len(recommendations) > 0):
                 for pr in products:
                     p_id = pr.id
-                    if ((p_id in recommendations)==True):
+                    if ((p_id in recommendations) == True):
                         pr.is_recommend = True
                     else:
-                        pr.is_recommend=False
+                        pr.is_recommend = False
 
             return products
         except Exception as e:
-            if (hasattr(e,'data')):
-                if (e.data!=None and "message" in e.data):
-                    abort(400,message =e.data["message"])
-            abort(400, message = "Неопознанная ошибка")
-
+            if (hasattr(e, 'data')):
+                if (e.data != None and "message" in e.data):
+                    abort(400, message=e.data["message"])
+            abort(400, message="Неопознанная ошибка")

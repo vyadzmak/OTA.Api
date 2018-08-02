@@ -1,17 +1,18 @@
-from models.db_models.models import Products,Attachments
+from models.db_models.models import Products, Attachments, ViewSettings, UserFavoriteProducts, ProductsPositions
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
 import modules.db_model_tranformer_modules.db_model_transformer_module as db_transformer
 import models.app_models.setting_models.setting_model as settings
 import urllib.parse
-#PARAMS
+
+# PARAMS
 ENTITY_NAME = "Products"
 MODEL = Products
-ROUTE ="/products"
+ROUTE = "/products"
 END_POINT = "products"
 
-#NESTED SCHEMA FIELDS
+# NESTED SCHEMA FIELDS
 default_image_data_products = {
     'id': fields.Integer,
     'original_file_name': fields.String,
@@ -26,41 +27,41 @@ default_image_data_products = {
 
 product_recomendations_fields = {
     'id': fields.Integer,
-    'name':fields.String,
-    'category_id':fields.Integer,
-    'product_code':fields.String,
-    'amount':fields.Float,
+    'name': fields.String,
+    'category_id': fields.Integer,
+    'product_code': fields.String,
+    'amount': fields.Float,
 }
-#OUTPUT SCHEMA
+# OUTPUT SCHEMA
 output_fields = {
     'id': fields.Integer,
-    'name':fields.String,
-    'category_id':fields.Integer,
-    'user_creator_id':fields.Integer,
-    'creation_date':fields.DateTime,
+    'name': fields.String,
+    'category_id': fields.Integer,
+    'user_creator_id': fields.Integer,
+    'creation_date': fields.DateTime,
     'gallery_images': fields.List(fields.Integer),
     'product_recomendations': fields.List(fields.Integer),
     'full_description': fields.String,
     'short_description': fields.String,
-    'product_code':fields.String,
-    'amount':fields.Float,
-    'discount_amount':fields.Float,
-    'unit_value':fields.Float,
-    'is_stock_product':fields.Boolean,
-    'is_discount_product':fields.Boolean,
-    'not_available':fields.Boolean,
-    'not_show_in_catalog':fields.Boolean,
-    'stock_text':fields.String,
-    'brand_id':fields.Integer,
-    'partner_id':fields.Integer,
+    'product_code': fields.String,
+    'amount': fields.Float,
+    'discount_amount': fields.Float,
+    'unit_value': fields.Float,
+    'is_stock_product': fields.Boolean,
+    'is_discount_product': fields.Boolean,
+    'not_available': fields.Boolean,
+    'not_show_in_catalog': fields.Boolean,
+    'stock_text': fields.String,
+    'brand_id': fields.Integer,
+    'partner_id': fields.Integer,
     'currency_id': fields.Integer,
     'unit_id': fields.Integer,
     'default_image_id': fields.Integer,
-    'default_image_data':fields.Nested(default_image_data_products),
-    'images_data':fields.Nested(default_image_data_products),
-    'product_recomendations_data':fields.Nested(product_recomendations_fields),
-    'recommended_amount':fields.Float,
-    'bonus_percent':fields.Float,
+    'default_image_data': fields.Nested(default_image_data_products),
+    'images_data': fields.Nested(default_image_data_products),
+    'product_recomendations_data': fields.Nested(product_recomendations_fields),
+    'recommended_amount': fields.Float,
+    'bonus_percent': fields.Float,
     'alt_amount': fields.Float,
     'alt_unit_value': fields.Float,
     'alt_unit_id': fields.Integer,
@@ -68,10 +69,10 @@ output_fields = {
 }
 
 
-#API METHODS FOR SINGLE ENTITY
+# API METHODS FOR SINGLE ENTITY
 class ProductsResource(Resource):
     def __init__(self):
-        self.route = ROUTE+'/<int:id>'
+        self.route = ROUTE + '/<int:id>'
         self.end_point = END_POINT
         pass
 
@@ -82,7 +83,7 @@ class ProductsResource(Resource):
 
         entity = session.query(MODEL).filter(MODEL.id == id, MODEL.is_delete == False).first()
         if not entity:
-            abort(404, message=ENTITY_NAME+" {} doesn't exist".format(id))
+            abort(404, message=ENTITY_NAME + " {} doesn't exist".format(id))
         # api_url = settings.API_URL
         # if hasattr(entity, 'default_image_data'):
         #     if (entity.default_image_data != None and entity.default_image_data.file_path != None):
@@ -96,19 +97,19 @@ class ProductsResource(Resource):
         #         entity.default_image_data.optimized_size_file_path = urllib.parse.urljoin(api_url,
         #                                                                                   entity.default_image_data.optimized_size_file_path)
 
-        entity.images_data =[]
+        entity.images_data = []
 
-        if (entity.gallery_images!=None and len(entity.gallery_images)>0):
-                for img_id in entity.gallery_images:
-                    image =session.query(Attachments).filter(Attachments.id== img_id).first()
-                    if not image:
-                        continue
-                    entity.images_data.append(image)
+        if (entity.gallery_images != None and len(entity.gallery_images) > 0):
+            for img_id in entity.gallery_images:
+                image = session.query(Attachments).filter(Attachments.id == img_id).first()
+                if not image:
+                    continue
+                entity.images_data.append(image)
 
-        entity.product_recomendations_data=[]
-        if (entity.product_recomendations!=None and len(entity.product_recomendations)>0):
+        entity.product_recomendations_data = []
+        if (entity.product_recomendations != None and len(entity.product_recomendations) > 0):
             for rec_id in entity.product_recomendations:
-                recomendation = session.query(Products).filter(Products.id==rec_id).first()
+                recomendation = session.query(Products).filter(Products.id == rec_id).first()
                 if not recomendation:
                     continue
 
@@ -120,14 +121,52 @@ class ProductsResource(Resource):
         try:
             entity = session.query(MODEL).filter(MODEL.id == id).first()
             if not entity:
-                abort(404, message=ENTITY_NAME+" {} doesn't exist".format(id))
-            entity.is_delete = True
-            session.add(entity)
-            session.commit()
+                abort(404, message=ENTITY_NAME + " {} doesn't exist".format(id))
+
+            prods = session.query(Products).filter(Products.product_recomendations.any(entity.id)).all()
+            if prods is not None:
+                session.bulk_update_mappings(Products, [{'id': x.id,
+                                                         'product_recomendations': list(
+                                                             filter(lambda y: y != entity.id, x.product_recomendations))}
+                                                        for x in prods])
+                session.commit()
+
+            v_settings = session.query(ViewSettings).filter(ViewSettings.recomendation_elements.any(entity.id)).all()
+            if v_settings is not None:
+                session.bulk_update_mappings(ViewSettings, [{'id': x.id,
+                                                         'recomendation_elements': list(
+                                                             filter(lambda y: y != entity.id,
+                                                                    x.recomendation_elements))}
+                                                        for x in v_settings])
+                session.commit()
+
+            user_favorites = session.query(UserFavoriteProducts).filter(
+                UserFavoriteProducts.products_ids.any(entity.id)).all()
+            if user_favorites is not None:
+                session.bulk_update_mappings(UserFavoriteProducts, [{'id': x.id,
+                                                             'products_ids': list(
+                                                                 filter(lambda y: y != entity.id,
+                                                                        x.products_ids))}
+                                                            for x in user_favorites])
+                session.commit()
+
+            product_positions = session.query(ProductsPositions).filter(
+                ProductsPositions.products_positions.any(entity.id)).all()
+            if product_positions is not None:
+                session.bulk_update_mappings(ProductsPositions, [{'id': x.id,
+                                                             'products_positions': list(
+                                                                 filter(lambda y: y != entity.id,
+                                                                        x.products_positions))}
+                                                            for x in product_positions])
+                session.commit()
+
+                entity.is_delete = True
+                session.add(entity)
+                session.commit()
             return {}, 204
         except Exception as e:
             session.rollback()
-            abort(400, message="Error while remove "+ENTITY_NAME)
+            abort(400, message="Error while remove " + ENTITY_NAME)
 
     @marshal_with(output_fields)
     def put(self, id):
@@ -139,8 +178,7 @@ class ProductsResource(Resource):
             entity = session.query(MODEL).filter(MODEL.id == id).first()
             if not entity:
                 abort(404, message=ENTITY_NAME + " {} doesn't exist".format(id))
-            db_transformer.transform_update_params(entity,json_data)
-
+            db_transformer.transform_update_params(entity, json_data)
 
             session.add(entity)
             session.commit()
@@ -169,17 +207,17 @@ class ProductsResource(Resource):
             return entity, 201
         except Exception as e:
             session.rollback()
-            abort(400, message="Error while update "+ENTITY_NAME)
+            abort(400, message="Error while update " + ENTITY_NAME)
         finally:
             pass
-            #session.rollback()
+            # session.rollback()
 
 
-#API METHODS FOR LIST ENTITIES
+# API METHODS FOR LIST ENTITIES
 class ProductsListResource(Resource):
     def __init__(self):
         self.route = ROUTE
-        self.end_point = END_POINT+'-list'
+        self.end_point = END_POINT + '-list'
         pass
 
     @marshal_with(output_fields)
@@ -205,7 +243,7 @@ class ProductsListResource(Resource):
                 #         entity.default_image_data.optimized_size_file_path = urllib.parse.urljoin(api_url,
                 #                                                                                   entity.default_image_data.optimized_size_file_path)
 
-                if (entity.gallery_images!=None and len(entity.gallery_images) > 0):
+                if (entity.gallery_images != None and len(entity.gallery_images) > 0):
                     for img_id in entity.gallery_images:
                         image = session.query(Attachments).filter(Attachments.id == img_id).first()
                         if not image:
@@ -218,7 +256,7 @@ class ProductsListResource(Resource):
         finally:
             pass
 
-            #session.rollback()
+            # session.rollback()
 
     @marshal_with(output_fields)
     def post(self):
@@ -230,5 +268,4 @@ class ProductsListResource(Resource):
             return entity, 201
         except Exception as e:
             session.rollback()
-            abort(400, message="Error while adding record "+ENTITY_NAME)
-
+            abort(400, message="Error while adding record " + ENTITY_NAME)

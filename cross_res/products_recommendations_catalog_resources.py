@@ -47,7 +47,7 @@ class ProductsRecommendationsCatalogResource(Resource):
             # product = session.query(Products).filter(Products.id==product_id).first()
             t=0
 
-            products = session.query(Products).all()
+            products = session.query(Products).filter(Products.is_delete == False).all()
 
             if not products:
                 abort(400, message='Ошибка получения данных. Данные не найдены')
