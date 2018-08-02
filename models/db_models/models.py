@@ -47,13 +47,13 @@ class AreaCatalog(Base):
 class Attachments(Base):
     __tablename__ = 'attachments'
     id = Column('id', Integer, primary_key=True)
-    upload_date = Column('upload_date', DateTime)
+    upload_date = Column('upload_date', DateTime, default=datetime.datetime.now(datetime.timezone.utc))
     original_file_name = Column('original_file_name', String(256))
     file_size = Column('file_size', Integer)
     file_path = Column('file_path', String(256))
     user_creator_id = Column('user_creator_id', ForeignKey('users.id'))
     thumb_file_path = Column('thumb_file_path', String(256))
-    uid = Column('uid', String(64))
+    uid = Column('uid', String(64), default=str(uuid.uuid4()))
     optimized_size_file_path = Column('optimized_size_file_path', String(256))
 
     attachment_user_data = relationship('Users', backref="attachment_user_data")
@@ -101,9 +101,9 @@ class ClientAddresses(Base):
     id = Column('id', Integer, primary_key=True)
     client_id = Column('client_id', ForeignKey('clients.id'))
     address = Column('address', String(500))
-    is_default = Column('is_default', Boolean)
-    confirmed = Column('confirmed', Boolean)
-    tobacco_alcohol_license = Column('tobacco_alcohol_license', Boolean)
+    is_default = Column('is_default', Boolean, default=False)
+    confirmed = Column('confirmed', Boolean, default=False)
+    tobacco_alcohol_license = Column('tobacco_alcohol_license', Boolean, default=False)
     name = Column('name', String(250))
     code = Column('code', String(250))
     phone_number = Column('phone_number', String(50))
@@ -152,9 +152,9 @@ class Clients(Base):
     __tablename__ = 'clients'
     id = Column('id', Integer, primary_key=True)
     name = Column('name', String(70))
-    registration_date = Column('registration_date', DateTime)
+    registration_date = Column('registration_date', DateTime, default=datetime.datetime.now(datetime.timezone.utc))
     registration_number = Column('registration_number', String(25))
-    lock_state = Column('lock_state', Boolean)
+    lock_state = Column('lock_state', Boolean, default=False)
     client_type_id = Column('client_type_id', ForeignKey('client_types.id'))
 
     client_type_data = relationship('ClientTypes', backref="client_type_data")
@@ -173,7 +173,7 @@ class CurrencyCatalog(Base):
     system_name = Column('system_name', String(50))
     name = Column('name', String(100))
     display_value = Column('display_value', String(100))
-    is_default = Column('is_default', Boolean)
+    is_default = Column('is_default', Boolean, default=False)
 
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
@@ -183,12 +183,11 @@ class CurrencyCatalog(Base):
 class Log(Base):
     __tablename__ = 'log'
     id = Column('id', Integer, primary_key=True)
-    date = Column('date', DateTime)
+    date = Column('date', DateTime, default=datetime.datetime.now(datetime.timezone.utc))
     message = Column('message', String)
 
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
-        self.date = datetime.datetime.now(datetime.timezone.utc)
 
 
 # order position states
@@ -210,7 +209,7 @@ class OrderPositions(Base):
     order_id = Column('order_id', ForeignKey('orders.id'))
     count = Column('count', Float)
     description = Column('description', String(300))
-    need_invoice = Column('need_invoice', Boolean)
+    need_invoice = Column('need_invoice', Boolean, default=False)
     order_position_state_id = Column('order_position_state_id', ForeignKey('order_position_states.id'))
     amount_per_item = Column('amount_per_item', Float)
     amount_per_item_discount = Column('amount_per_item_discount', Float)
@@ -240,7 +239,7 @@ class Orders(Base):
     __tablename__ = 'orders'
     id = Column('id', Integer, primary_key=True)
     user_id = Column('user_id', ForeignKey('users.id'))
-    creation_date = Column('creation_date', DateTime)
+    creation_date = Column('creation_date', DateTime, default=datetime.datetime.now(datetime.timezone.utc))
     number = Column('number', String(32))
     executor_id = Column('executor_id', ForeignKey('users.id'))
     processed_date = Column('processed_date', DateTime)
@@ -293,11 +292,11 @@ class ProductCategories(Base):
     full_description = Column('full_description', String(1000))
     images = Column('images', postgresql.ARRAY(Integer))
     user_creator_id = Column('user_creator_id', ForeignKey('users.id'))
-    creation_date = Column('creation_date', DateTime)
-    is_lock = Column('is_lock', Boolean)
+    creation_date = Column('creation_date', DateTime, default=datetime.datetime.now(datetime.timezone.utc))
+    is_lock = Column('is_lock', Boolean, default=False)
     parent_category_id = Column('parent_category_id', Integer)
     default_image_id = Column('default_image_id', ForeignKey('attachments.id'))
-    is_delete = Column('is_delete', Boolean)
+    is_delete = Column('is_delete', Boolean, default=False)
 
     default_image_data = relationship('Attachments', backref="default_image_data_product_categories")
 
@@ -312,10 +311,10 @@ class ProductComments(Base):
     __tablename__ = 'product_comments'
     id = Column('id', Integer, primary_key=True)
     user_id = Column('user_id', ForeignKey('users.id'))
-    creation_date = Column('creation_date', DateTime)
+    creation_date = Column('creation_date', DateTime, default=datetime.datetime.now(datetime.timezone.utc))
     comment_text = Column('comment_text', String(600))
     rate = Column('rate', Float)
-    is_delete = Column('is_delete', Boolean)
+    is_delete = Column('is_delete', Boolean, default=False)
     product_id = Column('product_id', ForeignKey('products.id'))
 
     comment_user_data = relationship('Users', backref="comment_user_data")
@@ -324,7 +323,6 @@ class ProductComments(Base):
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
         self.creation_date = datetime.datetime.now(datetime.timezone.utc)
-        self.is_delete = False
 
 
 # products catalog
@@ -333,33 +331,33 @@ class Products(Base):
     id = Column('id', Integer, primary_key=True)
     category_id = Column('category_id', Integer)
     user_creator_id = Column('user_creator_id', ForeignKey('users.id'))
-    creation_date = Column('creation_date', DateTime)
-    name = Column('name', String(250))
-    product_code = Column('product_code', String(32))
-    short_description = Column('short_description', String(250))
-    full_description = Column('full_description', String(1500))
+    creation_date = Column('creation_date', DateTime, default=datetime.datetime.now(datetime.timezone.utc))
+    name = Column('name', String(250), default="")
+    product_code = Column('product_code', String(32), default="")
+    short_description = Column('short_description', String(250), default="")
+    full_description = Column('full_description', String(1500), default="")
     brand_id = Column('brand_id', ForeignKey('brands_catalog.id'))
     partner_id = Column('partner_id', ForeignKey('partners_catalog.id'))
-    amount = Column('amount', Float)
+    amount = Column('amount', Float, default=0)
     currency_id = Column('currency_id', ForeignKey('currency_catalog.id'))
-    unit_value = Column('unit_value', Float)
+    unit_value = Column('unit_value', Float, default=0)
     unit_id = Column('unit_id', ForeignKey('unit_catalog.id'))
-    is_stock_product = Column('is_stock_product', Boolean)
-    stock_text = Column('stock_text', String(150))
-    is_discount_product = Column('is_discount_product', Boolean)
-    discount_amount = Column('discount_amount', Float)
-    not_available = Column('not_available', Boolean)
-    not_show_in_catalog = Column('not_show_in_catalog', Boolean)
-    gallery_images = Column('gallery_images', postgresql.ARRAY(Integer))
-    product_recomendations = Column('product_recomendations', postgresql.ARRAY(Integer))
+    is_stock_product = Column('is_stock_product', Boolean, default=False)
+    stock_text = Column('stock_text', String(150), default="")
+    is_discount_product = Column('is_discount_product', Boolean, default=False)
+    discount_amount = Column('discount_amount', Float, default=0)
+    not_available = Column('not_available', Boolean, default=False)
+    not_show_in_catalog = Column('not_show_in_catalog', Boolean, default=False)
+    gallery_images = Column('gallery_images', postgresql.ARRAY(Integer), default=[])
+    product_recomendations = Column('product_recomendations', postgresql.ARRAY(Integer), default=[])
     default_image_id = Column('default_image_id', ForeignKey('attachments.id'))
-    bonus_percent = Column('bonus_percent', Float)
-    recommended_amount = Column('recommended_amount', Float)
-    alt_amount = Column('alt_amount', Float)
-    alt_unit_value = Column('alt_unit_value', Float)
+    bonus_percent = Column('bonus_percent', Float, default=0)
+    recommended_amount = Column('recommended_amount', Float, default=0)
+    alt_amount = Column('alt_amount', Float, default=0)
+    alt_unit_value = Column('alt_unit_value', Float, default=0)
     alt_unit_id = Column('alt_unit_id', ForeignKey('unit_catalog.id'))
-    alt_discount_amount = Column('alt_discount_amount', Float)
-    is_delete = Column('is_delete', Boolean)
+    alt_discount_amount = Column('alt_discount_amount', Float, default=0)
+    is_delete = Column('is_delete', Boolean, default=False)
 
     default_image_data = relationship('Attachments', backref="default_image_data_product_products")
     product_unit_data = relationship("UnitCatalog", backref="product_unit_data", foreign_keys=[unit_id])
@@ -381,9 +379,7 @@ class Products(Base):
         self.alt_discount_amount = 0
         self.alt_amount = 0
         self.product_code = ''
-        self.product_recomendations = [
-
-        ]
+        self.product_recomendations = []
         self.stock_text = ''
         self.bonus_percent = 0
         self.recommended_amount = 0
@@ -407,7 +403,7 @@ class UnitCatalog(Base):
     system_name = Column('system_name', String(50))
     name = Column('name', String(100))
     display_value = Column('display_value', String(100))
-    is_default = Column('is_default', Boolean)
+    is_default = Column('is_default', Boolean, default=False)
 
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
@@ -420,8 +416,8 @@ class UserBonuses(Base):
     id = Column('id', Integer, primary_key=True)
     user_id = Column('user_id', ForeignKey('users.id'))
     order_id = Column('order_id', ForeignKey('orders.id'))
-    creation_date = Column('creation_date', DateTime)
-    state = Column('state', Boolean)
+    creation_date = Column('creation_date', DateTime, default=datetime.datetime.now(datetime.timezone.utc))
+    state = Column('state', Boolean, default=True)
     amount = Column('amount', Float)
 
     def __init__(self, *args):
@@ -436,11 +432,11 @@ class UserCartPositions(Base):
     id = Column('id', Integer, primary_key=True)
     product_id = Column('product_id', ForeignKey('products.id'))
     user_cart_id = Column('user_cart_id', ForeignKey('user_carts.id'))
-    count = Column('count', Float)
+    count = Column('count', Float, default=0)
     description = Column('description', String(300))
-    need_invoice = Column('need_invoice', Boolean)
-    temp_cart_uid = Column('temp_cart_uid', String(300))
-    alt_count = Column('alt_count', Float)
+    need_invoice = Column('need_invoice', Boolean, default=False)
+    temp_cart_uid = Column('temp_cart_uid', String(300), default=str(uuid.uuid4()))
+    alt_count = Column('alt_count', Float, default=0)
     user_cart_position_product_data = relationship('Products', backref="user_cart_position_product_data")
 
     def __init__(self, *args):
@@ -465,7 +461,7 @@ class UserCarts(Base):
     __tablename__ = 'user_carts'
     id = Column('id', Integer, primary_key=True)
     user_id = Column('user_id', ForeignKey('users.id'))
-    creation_date = Column('creation_date', DateTime)
+    creation_date = Column('creation_date', DateTime, default=datetime.datetime.now(datetime.timezone.utc))
     cart_state_id = Column('cart_state_id', ForeignKey('user_cart_states.id'))
     close_date = Column('close_date', DateTime)
 
@@ -482,7 +478,7 @@ class UserConfirmationCodes(Base):
     id = Column('id', Integer, primary_key=True)
     user_id = Column('user_id', ForeignKey('users.id'))
     code = Column('code', String(8))
-    creation_date = Column('creation_date', DateTime)
+    creation_date = Column('creation_date', DateTime, default=datetime.datetime.now(datetime.timezone.utc))
 
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
@@ -526,7 +522,7 @@ class UserLogins(Base):
     login = Column('login', String(32))
     password = Column('password', String(250))
     token = Column('token', String)
-    registration_date = Column('registration_date', DateTime)
+    registration_date = Column('registration_date', DateTime, default=datetime.datetime.now(datetime.timezone.utc))
     last_login_date = Column('last_login_date', DateTime)
 
     def __init__(self, *args):
@@ -539,12 +535,12 @@ class UserRoleRoutes(Base):
     __tablename__ = 'user_role_routes'
     id = Column('id', Integer, primary_key=True)
     user_role_id = Column('user_role_id', ForeignKey('user_roles.id'))
-    admin_route_access = Column('admin_route_access', Boolean)
-    data_settings_route_access = Column('data_settings_route_access', Boolean)
-    catalog_route_access = Column('catalog_route_access', Boolean)
-    requests_route_access = Column('requests_route_access', Boolean)
-    messages_route_access = Column('messages_route_access', Boolean)
-    events_route_access = Column('events_route_access', Boolean)
+    admin_route_access = Column('admin_route_access', Boolean, default=False)
+    data_settings_route_access = Column('data_settings_route_access', Boolean, default=False)
+    catalog_route_access = Column('catalog_route_access', Boolean, default=False)
+    requests_route_access = Column('requests_route_access', Boolean, default=False)
+    messages_route_access = Column('messages_route_access', Boolean, default=False)
+    events_route_access = Column('events_route_access', Boolean, default=False)
     related_user_roles = relationship('UserRoles', backref="user_role_route_access")
 
     def __init__(self, *args):
@@ -571,7 +567,7 @@ class Users(Base):
     name = Column('name', String(128))
     user_role_id = Column('user_role_id', ForeignKey('user_roles.id'))
     client_id = Column('client_id', ForeignKey('clients.id'))
-    lock_state = Column('lock_state', Boolean)
+    lock_state = Column('lock_state', Boolean, default=False)
 
     related_user_login = relationship('UserLogins', backref="user_data")
 
@@ -587,19 +583,19 @@ class ViewSettings(Base):
     __tablename__ = 'view_settings'
     id = Column('id', Integer, primary_key=True)
 
-    show_slider = Column('show_slider', Boolean)
-    show_badges = Column('show_badges', Boolean)
-    show_recommendations = Column('show_recommendations', Boolean)
-    show_badge_popular = Column('show_badge_popular', Boolean)
-    show_badge_discount = Column('show_badge_discount', Boolean)
-    show_badge_stock = Column('show_badge_stock', Boolean)
-    show_badge_partners = Column('show_badge_partners', Boolean)
+    show_slider = Column('show_slider', Boolean, default=False)
+    show_badges = Column('show_badges', Boolean, default=False)
+    show_recommendations = Column('show_recommendations', Boolean, default=False)
+    show_badge_popular = Column('show_badge_popular', Boolean, default=False)
+    show_badge_discount = Column('show_badge_discount', Boolean, default=False)
+    show_badge_stock = Column('show_badge_stock', Boolean, default=False)
+    show_badge_partners = Column('show_badge_partners', Boolean, default=False)
     default_slider_image = Column('default_slider_image', Integer)
     slider_images = Column('slider_images', postgresql.ARRAY(Integer))
     recomendation_elements = Column('recomendation_elements', postgresql.ARRAY(Integer))
     brand_elements = Column('brand_elements', postgresql.ARRAY(Integer))
     partner_elements = Column('partner_elements', postgresql.ARRAY(Integer))
-    show_brands = Column('show_brands', Boolean)
+    show_brands = Column('show_brands', Boolean, default=False)
 
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
@@ -632,10 +628,10 @@ class MessageContents(Base):
     __tablename__ = 'message_contents'
     id = Column('id', Integer, primary_key=True)
     user_sender_id = Column('user_sender_id', ForeignKey('users.id'))
-    creation_date = Column('creation_date', DateTime)
+    creation_date = Column('creation_date', DateTime, default=datetime.datetime.now(datetime.timezone.utc))
     title = Column('title', String(500))
     message = Column('message', String(5000))
-    is_popup = Column('is_popup', Boolean)
+    is_popup = Column('is_popup', Boolean, default=False)
 
     receivers = relationship('Messages', backref="message_content")
     user_data = relationship('Users', backref="message_contents_user_data")
@@ -650,7 +646,7 @@ class Messages(Base):
     __tablename__ = 'messages'
     id = Column('id', Integer, primary_key=True)
     receiver_user_id = Column('receiver_user_id', ForeignKey('users.id'))
-    is_read = Column('is_read', Boolean)
+    is_read = Column('is_read', Boolean, default=False)
     message_content_id = Column('message_content_id', ForeignKey('message_contents.id'))
 
     user_data = relationship('Users', backref="messages_user_data")
@@ -665,9 +661,9 @@ class Events(Base):
     id = Column('id', Integer, primary_key=True)
     user_creator_id = Column('user_creator_id', ForeignKey('users.id'))
     product_id = Column('product_id', ForeignKey('products.id'))
-    end_date = Column('end_date', DateTime)
+    end_date = Column('end_date', DateTime, default=datetime.datetime.now(datetime.timezone.utc))
     count_days_notifications = Column('count_days_notifications', Integer)
-    state = Column('state', Boolean)
+    state = Column('state', Boolean, default=False)
     message = Column('message', String(5000))
 
     user_data = relationship('Users', backref="events_user_data")
