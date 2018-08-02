@@ -96,7 +96,7 @@ class ProductUsersCommentsResource(Resource):
 
 
             comments = session.query(ProductComments).filter(
-                ProductComments.product_id == product.id).all()
+                ProductComments.product_id == product.id).order_by(desc(ProductComments.creation_date)).all()
 
             product.comments = comments
             product.comments_count = 0
