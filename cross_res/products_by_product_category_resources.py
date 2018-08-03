@@ -110,7 +110,7 @@ class ProductsByProductCategoryResource(Resource):
             if (len(args) == 0):
                 abort(400, message='Arguments not found')
             user_id = args['user_id']
-            category_id = args['category_id']
+            category_id = int(args['category_id'])
             user_cart_id =self.get_user_cart_argument(args)
 
             user_action_logging.log_user_actions(ROUTE,user_id, action_type)

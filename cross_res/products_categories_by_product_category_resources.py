@@ -76,12 +76,13 @@ class ProductsCategoriesByProductCategoryResource(Resource):
             if (len(args) == 0):
                 abort(400, message='Arguments not found')
             user_id = args['user_id']
-            category_id = args['category_id']
+            category_id = int(args['category_id'])
             user_action_logging.log_user_actions(ROUTE, user_id, action_type)
             product_categories = session.query(ProductCategories).filter(
                 ProductCategories.parent_category_id == category_id,
                 ProductCategories.is_delete == False).all()
             if not product_categories:
+                #return []
                 abort(400, message='Ошибка получения данных. Данные не найдены')
 
             # product_categories = copy.deepcopy(product_categories)
