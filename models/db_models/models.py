@@ -275,11 +275,10 @@ class PartnersCatalog(Base):
 
     default_image_data_partners = relationship('Attachments', backref="default_image_data_partners")
 
-    def _get_images_data(self):
+    @property
+    def images_data(self):
         return object_session(self).query(Attachments) \
             .filter(Attachments.id.in_(self.images if self.images is not None else [])).all()
-
-    images_data = property(_get_images_data)
 
     @property
     def products_count(self):
