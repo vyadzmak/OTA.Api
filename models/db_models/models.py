@@ -1,12 +1,9 @@
-from sqlalchemy import Column
-from sqlalchemy import Integer
-from sqlalchemy import String
 from sqlalchemy import Boolean
 from sqlalchemy import Date
 from sqlalchemy import DateTime
 from sqlalchemy import Float
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Integer, ForeignKey, String, Column, JSON
+from sqlalchemy import Integer, ForeignKey, String, Column, JSON, select, func
+from sqlalchemy.orm import column_property, object_session
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects import postgresql
@@ -274,9 +271,23 @@ class PartnersCatalog(Base):
     description = Column('description', String(1000))
     short_description = Column('short_description', String(600))
     default_image_id = Column('default_image_id', ForeignKey('attachments.id'))
-    minimum_order_amount = Column('minimum_order_amount', Float)
+    minimum_order_amount = Column('minimum_order_amount', Float, default=0)
 
-    default_image_data_partners = relationship('Attachments', backref="default_image_dat_partners")
+    default_image_data_partners = relationship('Attachments', backref="default_image_data_partners")
+
+    def _get_images_data(self):
+        return object_session(self).query(Attachments) \
+            .filter(Attachments.id.in_(self.images if self.images is not None else [])).all()
+
+    images_data = property(_get_images_data)
+
+    @property
+    def products_count(self):
+        return object_session(self). \
+            scalar(
+            select([func.count(Products.id)]). \
+                where(Products.partner_id == self.id)
+        )
 
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
