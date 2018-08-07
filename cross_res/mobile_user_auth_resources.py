@@ -102,7 +102,7 @@ recomendation_elements_data_fields = {
     'default_image_id': fields.Integer,
     'default_image_data': fields.Nested(default_image_data_products),
     'comments_count': fields.Integer,
-    'rate': fields.Float,
+    'rate': fields.Float(attribute=lambda x: round(x.rate or 0, 2)),
     'product_unit_data': fields.Nested(unit_data_fields),
     'product_currency_data': fields.Nested(currency_data_fields),
     'product_alt_unit_data': fields.Nested(unit_data_fields),
@@ -290,22 +290,22 @@ class MobileUserAuthResource(Resource):
                     recommended_product = session.query(Products).filter(Products.id == p_id,
                                                                          Products.is_delete == False).first()
                     if recommended_product is not None:
-                        rec_comments = session.query(ProductComments) \
-                            .filter(ProductComments.product_id == recommended_product.id,
-                                    ProductComments.is_delete == False).all()
-                        recommended_product.comments_count = 0
-                        recommended_product.rate = 0
-                        if rec_comments is not None:
-                            rec_total_rate = 0
-                            rec_comments_count = 0
-                            for rec_comment in rec_comments:
-                                rec_total_rate += rec_comment.rate
-                                rec_comments_count += 1
-
-                            if rec_comments_count > 0:
-                                recommended_product.comments_count = rec_comments_count
-                                recommended_product.rate = round((rec_total_rate / rec_comments_count), 2)
-                    recommendations.append(recommended_product)
+                        # rec_comments = session.query(ProductComments) \
+                        #     .filter(ProductComments.product_id == recommended_product.id,
+                        #             ProductComments.is_delete == False).all()
+                        # recommended_product.comments_count = 0
+                        # recommended_product.rate = 0
+                        # if rec_comments is not None:
+                        #     rec_total_rate = 0
+                        #     rec_comments_count = 0
+                        #     for rec_comment in rec_comments:
+                        #         rec_total_rate += rec_comment.rate
+                        #         rec_comments_count += 1
+                        #
+                        #     if rec_comments_count > 0:
+                        #         recommended_product.comments_count = rec_comments_count
+                        #         recommended_product.rate = round((rec_total_rate / rec_comments_count), 2)
+                        recommendations.append(recommended_product)
 
                 view_settings.recomendation_elements_data = recommendations
 

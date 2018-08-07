@@ -67,7 +67,7 @@ output_fields = {
     'default_image_id': fields.Integer,
     'default_image_data': fields.Nested(default_image_data_products),
     'comments_count': fields.Integer,
-    'rate': fields.Float,
+    'rate': fields.Float(attribute=lambda x: round(x.rate or 0, 2)),
     'product_unit_data': fields.Nested(unit_data_fields),
     'product_currency_data': fields.Nested(currency_data_fields),
     'recommended_amount': fields.Float,
@@ -138,21 +138,6 @@ class ProductsByProductCategoryResource(Resource):
                         product.alt_count = check_user_cart_positions.alt_count
 
                     pass
-                comments = session.query(ProductComments).filter(
-                    ProductComments.product_id == product.id and ProductComments.is_delete == False).all()
-                product.comments_count = 0
-                product.rate = 0
-                if (not comments):
-                    continue
-                total_rate = 0
-                comments_count = 0
-                for comment in comments:
-                    total_rate += comment.rate
-                    comments_count += 1
-
-                if (comments_count > 0):
-                    product.comments_count = comments_count
-                    product.rate = round((total_rate / comments_count), 2)
 
             product_position = session.query(ProductsPositions) \
                 .filter(ProductsPositions.category_id == category_id).first()

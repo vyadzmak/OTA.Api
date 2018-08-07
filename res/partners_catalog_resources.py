@@ -70,7 +70,12 @@ class PartnersResource(Resource):
             entity = session.query(MODEL).filter(MODEL.id == id).first()
             if not entity:
                 abort(404, message=ENTITY_NAME + " {} doesn't exist".format(id))
+            session.query(Products).filter(Products.partner_id == entity.id).update({Products.partner_id: None})
+            session.commit()
             session.delete(entity)
+            session.commit()
+            session.query(Attachments).filter(Attachments.id.in_(entity.images)).delete(
+                synchronize_session=False)
             session.commit()
             return {}, 204
         except Exception as e:
@@ -91,24 +96,6 @@ class PartnersResource(Resource):
 
             session.add(entity)
             session.commit()
-
-            entity.images_data = []
-
-            if (entity.images != None and len(entity.images) > 0):
-                for img_id in entity.images:
-                    image = session.query(Attachments).filter(Attachments.id == img_id).first()
-                    if not image:
-                        continue
-                    entity.images_data.append(image)
-
-            entity.products_count = 0
-
-            products = session.query(Products).filter(Products.partner_id == entity.id).all()
-
-            if (not products):
-                entity.products_count = 0
-            else:
-                entity.prdoucts_count = len(products)
 
             return entity, 201
         except Exception as e:

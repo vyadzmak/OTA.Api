@@ -47,7 +47,7 @@ output_fields = {
     'id': fields.Integer,
     'can_comments':fields.Boolean,
     'comments': fields.Nested(comment_fields),
-    'rate':fields.Float,
+    'rate': fields.Float(attribute=lambda x: round(x.rate or 0, 2)),
     'comments_count':fields.Integer
 }
 
@@ -99,8 +99,8 @@ class ProductUsersCommentsResource(Resource):
                 ProductComments.product_id == product.id).order_by(desc(ProductComments.creation_date)).all()
 
             product.comments = comments
-            product.comments_count = 0
-            product.rate = 0
+            # product.comments_count = 0
+            # product.rate = 0
 
 
 
@@ -110,11 +110,11 @@ class ProductUsersCommentsResource(Resource):
 
 
             if (product.comments != None):
-                total_rate = 0
-                comments_count = 0
+                # total_rate = 0
+                # comments_count = 0
                 for comment in product.comments:
-                    total_rate += comment.rate
-                    comments_count += 1
+                    # total_rate += comment.rate
+                    # comments_count += 1
 
                     user_id = comment.user_id
                     user_info = session.query(UserInfo).filter(UserInfo.user_id==user_id).first()
@@ -132,9 +132,9 @@ class ProductUsersCommentsResource(Resource):
                         comment.comment_user_data.avatar = avatar
 
 
-                if (comments_count > 0):
-                    product.comments_count = comments_count
-                    product.rate = round((total_rate / comments_count), 2)
+                # if (comments_count > 0):
+                #     product.comments_count = comments_count
+                #     product.rate = round((total_rate / comments_count), 2)
 
 
 

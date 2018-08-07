@@ -65,7 +65,6 @@ product_data_fields ={
     'default_image_id': fields.Integer,
     'default_image_data': fields.Nested(default_image_data_products),
     'comments_count': fields.Integer,
-    'rate': fields.Float,
     'product_unit_data': fields.Nested(unit_data_fields),
     'product_currency_data': fields.Nested(currency_data_fields),
     'product_alt_unit_data': fields.Nested(unit_data_fields),

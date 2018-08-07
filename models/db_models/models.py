@@ -2,8 +2,8 @@ from sqlalchemy import Boolean
 from sqlalchemy import Date
 from sqlalchemy import DateTime
 from sqlalchemy import Float
-from sqlalchemy import Integer, ForeignKey, String, Column, JSON, select, func
-from sqlalchemy.orm import column_property, object_session
+from sqlalchemy import Integer, ForeignKey, String, Column, JSON, select, func, and_
+from sqlalchemy.orm import column_property, object_session, remote, foreign, aliased
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects import postgresql
@@ -262,60 +262,6 @@ class Orders(Base):
         self.order_state_id = 1
 
 
-# partners catalog
-class PartnersCatalog(Base):
-    __tablename__ = 'partners_catalog'
-    id = Column('id', Integer, primary_key=True)
-    name = Column('name', String(100))
-    images = Column('images', postgresql.ARRAY(Integer))
-    description = Column('description', String(1000))
-    short_description = Column('short_description', String(600))
-    default_image_id = Column('default_image_id', ForeignKey('attachments.id'))
-    minimum_order_amount = Column('minimum_order_amount', Float, default=0)
-
-    default_image_data_partners = relationship('Attachments', backref="default_image_data_partners")
-
-    @property
-    def images_data(self):
-        return object_session(self).query(Attachments) \
-            .filter(Attachments.id.in_(self.images if self.images is not None else [])).all()
-
-    @property
-    def products_count(self):
-        return object_session(self). \
-            scalar(
-            select([func.count(Products.id)]). \
-                where(Products.partner_id == self.id)
-        )
-
-    def __init__(self, *args):
-        db_tranformer.transform_constructor_params(self, args)
-        self.minimum_order_amount = 0
-
-
-# product categories
-class ProductCategories(Base):
-    __tablename__ = 'product_categories'
-    id = Column('id', Integer, primary_key=True)
-    name = Column('name', String(64))
-    short_description = Column('short_description', String(500))
-    full_description = Column('full_description', String(1000))
-    images = Column('images', postgresql.ARRAY(Integer))
-    user_creator_id = Column('user_creator_id', ForeignKey('users.id'))
-    creation_date = Column('creation_date', DateTime, default=datetime.datetime.now(datetime.timezone.utc))
-    is_lock = Column('is_lock', Boolean, default=False)
-    parent_category_id = Column('parent_category_id', Integer)
-    default_image_id = Column('default_image_id', ForeignKey('attachments.id'))
-    is_delete = Column('is_delete', Boolean, default=False)
-
-    default_image_data = relationship('Attachments', backref="default_image_data_product_categories")
-
-    def __init__(self, *args):
-        db_tranformer.transform_constructor_params(self, args)
-        self.creation_date = datetime.datetime.now(datetime.timezone.utc)
-        self.is_lock = False
-
-
 # product comments
 class ProductComments(Base):
     __tablename__ = 'product_comments'
@@ -374,7 +320,17 @@ class Products(Base):
     product_alt_unit_data = relationship("UnitCatalog", backref="product_alt_unit_data", foreign_keys=[alt_unit_id])
     product_currency_data = relationship("CurrencyCatalog", backref="product_currency_data")
 
-    # product_category_data6 = relationship('ProductCategories', backref="product_category_data6")
+    rate = column_property(
+        select([func.avg(ProductComments.rate)]). \
+            where(and_(ProductComments.product_id == id, ProductComments.is_delete == False)). \
+            correlate_except(ProductComments)
+    )
+
+    comments_count = column_property(
+        select([func.count(ProductComments.id)]). \
+            where(and_(ProductComments.product_id == id, ProductComments.is_delete == False)). \
+            correlate_except(ProductComments)
+    )
 
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
@@ -393,6 +349,86 @@ class Products(Base):
         self.stock_text = ''
         self.bonus_percent = 0
         self.recommended_amount = 0
+
+
+# product categories
+class ProductCategories(Base):
+    __tablename__ = 'product_categories'
+    id = Column('id', Integer, primary_key=True)
+    name = Column('name', String(64))
+    short_description = Column('short_description', String(500))
+    full_description = Column('full_description', String(1000))
+    images = Column('images', postgresql.ARRAY(Integer))
+    user_creator_id = Column('user_creator_id', ForeignKey('users.id'))
+    creation_date = Column('creation_date', DateTime, default=datetime.datetime.now(datetime.timezone.utc))
+    is_lock = Column('is_lock', Boolean, default=False)
+    parent_category_id = Column('parent_category_id', Integer)
+    default_image_id = Column('default_image_id', ForeignKey('attachments.id'))
+    is_delete = Column('is_delete', Boolean, default=False)
+
+    default_image_data = relationship('Attachments', backref="default_image_data_product_categories")
+    child_categories = relationship("ProductCategories",
+                               primaryjoin = and_(remote(parent_category_id) == foreign(id),
+                                                  foreign(is_delete) == False),
+                               uselist=True)
+
+    internal_products_count = column_property(
+        select([func.count(Products.id)]). \
+            where(and_(Products.category_id == id, Products.is_delete == False)). \
+            correlate_except(Products)
+    )
+
+    @property
+    def internal_categories_count(self):
+        return object_session(self). \
+            scalar(
+            select([func.count(ProductCategories.id)]). \
+                where(and_(ProductCategories.parent_category_id == self.id, ProductCategories.is_delete == False))
+        )
+
+    @property
+    def child_products_count(self):
+        child_ids = [x.id for x in self.child_categories]
+        return object_session(self). \
+            scalar(
+            select([func.count(Products.id)]) \
+            .where(and_(Products.category_id.in_(child_ids), Products.is_delete == False))
+        )
+
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
+        self.creation_date = datetime.datetime.now(datetime.timezone.utc)
+        self.is_lock = False
+
+
+# partners catalog
+class PartnersCatalog(Base):
+    __tablename__ = 'partners_catalog'
+    id = Column('id', Integer, primary_key=True)
+    name = Column('name', String(100))
+    images = Column('images', postgresql.ARRAY(Integer))
+    description = Column('description', String(1000))
+    short_description = Column('short_description', String(600))
+    default_image_id = Column('default_image_id', ForeignKey('attachments.id'))
+    minimum_order_amount = Column('minimum_order_amount', Float, default=0)
+
+    default_image_data_partners = relationship('Attachments', backref="default_image_data_partners")
+
+    products_count = column_property(
+        select([func.count(Products.id)]). \
+            where(and_(Products.partner_id == id, Products.is_delete == False)). \
+            correlate_except(Products)
+    )
+
+    @property
+    def images_data(self):
+        return object_session(self).query(Attachments) \
+            .filter(Attachments.id.in_(self.images if self.images is not None else [])).all()
+
+
+    def __init__(self, *args):
+        db_tranformer.transform_constructor_params(self, args)
+        self.minimum_order_amount = 0
 
 
 # settings
