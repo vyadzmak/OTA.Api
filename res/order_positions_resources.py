@@ -16,11 +16,19 @@ product_data_fields = {
     'name': fields.String,
     'category_id': fields.Integer,
     'product_code': fields.String,
+    'is_stock_product': fields.Boolean,
     'amount': fields.Float,
+    'alt_amount': fields.Float,
+    'discount_amount': fields.Float,
+    'alt_discount_amount': fields.Float,
     'unit_display_value': fields.String(
         attribute=lambda x: x.product_unit_data.display_value if x.product_unit_data else ''),
     'alt_unit_display_value': fields.String(
-        attribute=lambda x: x.product_alt_unit_data.display_value if x.product_alt_unit_data else '')
+        attribute=lambda x: x.product_alt_unit_data.display_value if x.product_alt_unit_data else ''),
+    'currency_display_value': fields.String(
+        attribute=lambda x: x.product_currency_data.display_value if x.product_currency_data else ''),
+    'partner_name': fields.String(
+        attribute=lambda x: x.partner_data.name if x.partner_data else '')
 }
 
 order_data_fields = {

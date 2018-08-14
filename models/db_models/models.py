@@ -319,6 +319,7 @@ class Products(Base):
     product_unit_data = relationship("UnitCatalog", backref="product_unit_data", foreign_keys=[unit_id])
     product_alt_unit_data = relationship("UnitCatalog", backref="product_alt_unit_data", foreign_keys=[alt_unit_id])
     product_currency_data = relationship("CurrencyCatalog", backref="product_currency_data")
+    partner_data = relationship("PartnersCatalog", backref="product_partner_data")
 
     rate = column_property(
         select([func.avg(ProductComments.rate)]). \

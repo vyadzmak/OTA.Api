@@ -262,6 +262,7 @@ class FilterProductResource(Resource):
                 .outerjoin(PartnersCatalog) \
                 .outerjoin(BrandsCatalog) \
                 .filter(or_(Products.name.ilike(r_name),
+                            Products.product_code.ilike(r_name),
                             PartnersCatalog.name.ilike(r_name),
                             BrandsCatalog.name.ilike(r_name))).all()
             return products
