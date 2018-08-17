@@ -424,7 +424,7 @@ class PartnersCatalog(Base):
     @property
     def images_data(self):
         return object_session(self).query(Attachments) \
-            .filter(Attachments.id.in_(self.images if self.images is not None else [])).all()
+            .filter(Attachments.id.in_(self.images) if self.images is not None else False).all()
 
 
     def __init__(self, *args):
