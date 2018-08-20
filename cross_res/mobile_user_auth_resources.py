@@ -1,5 +1,5 @@
 from models.db_models.models import UserLogins, Orders, Settings, UserInfo, Attachments, \
-    ViewSettings, Products, BrandsCatalog, PartnersCatalog, UserFavoriteProducts, ProductComments
+    ViewSettings, Products, BrandsCatalog, PartnersCatalog, UserFavoriteProducts, ProductComments, ClientAddresses
 from db.db import session
 from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal_with, abort, reqparse
@@ -188,7 +188,8 @@ output_fields = {
     'no_avatar_url': fields.String,
     'view_settings': fields.Nested(view_settings_fields),
     'user_favorites_products': fields.Nested(user_favorites_products_fields),
-    'avatar_url': fields.String
+    'avatar_url': fields.String,
+    'is_confirmed':fields.Boolean
 }
 
 
@@ -337,6 +338,17 @@ class MobileUserAuthResource(Resource):
 
             user_login.user_favorites_products = session.query(UserFavoriteProducts).filter(
                 UserFavoriteProducts.user_id == user_login.user_id).first()
+
+            user_login.is_confirmed = False
+
+            client_id = user_login.user_data.client_data.id
+
+            addresses = session.query(ClientAddresses).filter(ClientAddresses.client_id == client_id).all()
+
+            for address in addresses:
+                if (address.confirmed == True):
+                    user_login.is_confirmed = True
+                    break
 
             return user_login
         except Exception as e:
