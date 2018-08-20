@@ -108,12 +108,14 @@ class AddCartPositionToCartResource(Resource):
                 session.add(user_cart_position_entity)
                 session.commit()
             else:
-
-                check_user_cart_positions.count = count
-                check_user_cart_positions.alt_count = alt_count
-                session.add(check_user_cart_positions)
-                session.commit()
-
+                if (count>0 or alt_count>0):
+                    check_user_cart_positions.count = count
+                    check_user_cart_positions.alt_count = alt_count
+                    session.add(check_user_cart_positions)
+                    session.commit()
+                else:
+                    session.delete(check_user_cart_positions)
+                    session.commit()
 
 
 
@@ -127,7 +129,8 @@ class AddCartPositionToCartResource(Resource):
             for cart_position in user_cart_positions:
                 count = cart_position.count
                 alt_count = cart_position.alt_count
-
+                if (count==0 and alt_count==0):
+                    continue
                 product = session.query(Products).filter(Products.id==cart_position.product_id).first()
                 if (currency_id==-1):
                     currency_id = product.currency_id
@@ -177,7 +180,9 @@ class AddCartPositionToCartResource(Resource):
                     total_sum_without_discount+=round(product.alt_amount*alt_count,2)
 
             economy_delta = total_sum_without_discount-amount_sum
-            economy_percent =round(100*(economy_delta/total_sum_without_discount),2)
+            economy_percent=0
+            if (total_sum_without_discount!=0):
+                economy_percent =round(100*(economy_delta/total_sum_without_discount),2)
 
 
             user_cart.total_amount = total_sum
@@ -191,6 +196,7 @@ class AddCartPositionToCartResource(Resource):
             return user_cart
 
         except Exception as e:
+            session.rollback()
             if (hasattr(e,'data')):
                 if (e.data!=None and "message" in e.data):
                     abort(400,message =e.data["message"])

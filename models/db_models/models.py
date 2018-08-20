@@ -205,11 +205,14 @@ class OrderPositions(Base):
     product_id = Column('product_id', ForeignKey('products.id'))
     order_id = Column('order_id', ForeignKey('orders.id'))
     count = Column('count', Float)
+    alt_count = Column('alt_count', Float)
     description = Column('description', String(300))
     need_invoice = Column('need_invoice', Boolean, default=False)
     order_position_state_id = Column('order_position_state_id', ForeignKey('order_position_states.id'))
     amount_per_item = Column('amount_per_item', Float)
     amount_per_item_discount = Column('amount_per_item_discount', Float)
+    alt_amount_per_item = Column('alt_amount_per_item', Float)
+    alt_amount_per_item_discount = Column('alt_amount_per_item_discount', Float)
     total_amount = Column('total_amount', Float)
 
     product_data = relationship('Products', backref="product_data")
@@ -424,7 +427,7 @@ class PartnersCatalog(Base):
     @property
     def images_data(self):
         return object_session(self).query(Attachments) \
-            .filter(Attachments.id.in_(self.images if self.images is not None else [])).all()
+            .filter(Attachments.id.in_(self.images) if self.images is not None else False).all()
 
 
     def __init__(self, *args):
