@@ -53,6 +53,7 @@ from cross_res.attacments_info_resources import *
 from cross_res.client_info_by_client_resources import *
 from cross_res.client_addresses_by_client_resources import *
 from cross_res.events_by_user import *
+from cross_res.export_orders_resources import *
 from cross_res.products_categories_by_product_category_resources import *
 from cross_res.products_by_product_category_resources import *
 from cross_res.route_catalog_products_general_resources import *
@@ -202,6 +203,7 @@ api_resources_cross = [
     ClientInfoByClientResource,
     ClientAddressesByClientResource,
     EventsByUserResource,
+    ExportOrdersResource,
     ProductsCategoriesByProductCategoryResource,
     ProductsByProductCategoryResource,
     RouteCatalogProductsGeneralResource,
