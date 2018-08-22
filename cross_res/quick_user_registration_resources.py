@@ -5,6 +5,7 @@ from flask_restful import Resource, fields, marshal_with, abort, reqparse
 import modules.db_model_tranformer_modules.db_model_transformer_module as db_transformer
 import datetime
 import base64
+import modules.http.send_sms_module as sms_sender
 # PARAMS
 ENTITY_NAME = "Quick User Registration"
 # MODEL = Users
@@ -160,6 +161,11 @@ class QuickUserRegistrationResource(Resource):
             user_info = session.query(UserInfo).filter(UserInfo.user_id == user.id).first()
             user.user_login = login
             user.user_info_data = user_info
+
+            send_user_phone = '+'+phone_number
+            # send_user_phone = '+77077750095'
+            send_code = str(user_confirmation_entity.code)
+            sms_sender.send_sms(send_user_phone,send_code)
             return user, 201
 
 
