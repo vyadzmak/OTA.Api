@@ -59,77 +59,7 @@ def to_str(bytes_or_str):
     return value  # Instance of str
 
 
-def convert_document(data):
-    try:
-        rows = data["rows"][0]["cells"][0]["tableData"]["items"]
-        headers = data["rows"][0]["cells"][0]["tableData"]["headers"]
-        tt = 0
-        titles = []
-        names = []
-
-        for header in headers:
-            titles.append(header["text"])
-            if (header["value"] != 'indicators'):
-                names.append(header["value"])
-
-        index = 0
-        r_index = -1
-        for title in titles:
-            if (title == '*' and index == 0):
-                titles[index] = 'Наименование'
-
-            if (title == '*' and index > 0):
-                r_index = index
-                break
-
-            index += 1
-        if (r_index != -1):
-            titles.remove(titles[r_index])
-
-        export_rows = []
-
-        for row in rows:
-            _row = []
-            for name in names:
-                if (name in row):
-                    value = row[name]
-
-                    if (name == 'valueDebet' or name == 'valueCredit'):
-                        # pass
-                        value = value.replace(',', '')
-                        # value = value.replace('.',',')
-
-                    _row.append(value)
-
-            export_rows.append(_row)
-        result_rows = []
-
-        result_rows.append([titles])
-        result_rows.append(export_rows)
-        t = 0
-        return names, result_rows
-    except Exception as e:
-        return None
-
-
-def get_widths(index, cells):
-    # widths =[]
-    # for cell in cells:
-    #     row = int(cell["row"])
-    #     sheet = int(cell["sheet"])
-    #     col = int(cell["col"])
-    #     if (row==0 and sheet==index):
-    #         s_width = 6
-    #         if (col==1):
-    #             s_width = 8
-    #         width =round(int(cell["json"]["width"])/s_width,1)
-    #         widths.append(width)
-    #
-    # return widths
-    pass
-
-
-def export_cells(worksheet, data):
+def export_cells(worksheet, data, styles):
     try:
         # row, col, value
         row_index = 0
@@ -144,72 +74,13 @@ def export_cells(worksheet, data):
                     cell_index += 1
 
                     value = cell
-                    _format = None
+                    _format = styles[row_index-1][cell_index-1]
                     if (_format != None):
-                        worksheet.write(row - 1, cell_index - 1, value, _format)
+                        worksheet.write(row_index - 1, cell_index - 1, value, _format)
+                        print(value)
+                        print(_format.text_h_align)
                     else:
                         worksheet.write(row_index - 1, cell_index - 1, value)
-    except Exception as e:
-        pass
-
-
-def export_single_document(document):
-    try:
-
-        if (not document):
-            return None
-
-        dir_id = str(uuid.uuid4().hex)
-        partner_folder = os.path.join(EXPORTS_FOLDER, dir_id)
-        if not os.path.exists(partner_folder):
-            os.makedirs(partner_folder)
-
-        s_cmpstr = copy.deepcopy(document.data)
-        bc = s_cmpstr.count("b'")
-
-        s_cmpstr = s_cmpstr.replace("b'", "", 1)
-        qc = s_cmpstr.count("'")
-
-        s_cmpstr = s_cmpstr.replace("'", "")
-        b_cmpstr = to_bytes(s_cmpstr)
-        b_cmpstr = base64.b64decode(b_cmpstr)
-        rr = to_str(zlib.decompress(b_cmpstr))
-        f_cmpstr = rr
-        # f_cmpstr = f_cmpstr.replace("'", "")
-        data = json.loads(f_cmpstr)
-
-        names, converted_data_rows = convert_document(data)
-
-        project_name = str(document.file_name).replace('"', ' ')
-        project_name = translit(project_name, 'ru', reversed=True)
-
-        dt = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        dt = str(dt).replace('-', '')
-        project_name = project_name + "_" + str(dt)
-
-        file_name = clean_filename(project_name)
-        file_name = file_name.replace('__', "_")
-        file_path = os.path.join(partner_folder, file_name + ".xlsx")
-
-        if (len(file_path) > 255):
-            file_path = os.path.join(partner_folder, dir_id + ".xlsx")
-
-        workbook = xlsxwriter.Workbook(file_path)
-        sheet_name = 'Data'
-        worksheet = workbook.add_worksheet(sheet_name)
-        widths = formatter.get_column_widths(converted_data_rows)
-        formatter.generate_worksheet_styles(workbook, worksheet, names)
-        index = 0
-        for width in widths:
-            worksheet.set_column(index, index, width)
-            index += 1
-
-        export_cells(worksheet, converted_data_rows)
-        workbook.close()
-        return partner_folder, file_name + ".xlsx"
-
-        # return partner_folder, file_name + ".xlsx"
-        pass
     except Exception as e:
         pass
 
@@ -223,7 +94,7 @@ def make_archive(source, destination):
         pass
 
 
-def export_order_positions(documents, titles):
+def export_order_positions(documents, titles, styles_dict):
     try:
 
         if (not documents):
@@ -250,23 +121,32 @@ def export_order_positions(documents, titles):
 
             if (len(file_path) > 255):
                 file_path = os.path.join(exports_folder, dir_id + ".xlsx")
-            converted_data_rows = [
-                [['Платежка для {} от {}'.format(document['name'], dtnow)]],
-                [titles],
-                document['positions'],
-                [['','','','','','','','Итого','{}{}'.format(document['total'], document['currency'])]]
-            ]
+            converted_data_rows = [[['ТН для {} от {}'.format(document['name'], dtnow)]]]
+            names = [styles_dict['title']]
+            for client_name, positions in document['positions'].items():
+                names.append(styles_dict['subtitle'])
+                names.append(styles_dict['header'])
+                for i in range(len(positions)):
+                    names.append(styles_dict['data_row'])
+                converted_data_rows.append([[client_name]])
+                converted_data_rows.append([titles])
+                converted_data_rows.append(positions)
+
+            names.append(styles_dict['total_row'])
+            converted_data_rows.append([['','','','','','','','Итого','{}{}'.format(document['total'], document['currency'])]])
+
+
             workbook = xlsxwriter.Workbook(file_path)
             sheet_name = document['name']
             worksheet = workbook.add_worksheet(sheet_name)
             widths = formatter.get_column_widths(converted_data_rows)
-            # formatter.generate_worksheet_styles(workbook, worksheet, names)
+            styles = formatter.generate_worksheet_styles(workbook, names)
             index = 0
             for width in widths:
                 worksheet.set_column(index, index, width)
                 index += 1
 
-            export_cells(worksheet, converted_data_rows)
+            export_cells(worksheet, converted_data_rows, styles)
             workbook.close()
 
         zip_name = exports_folder

@@ -15,9 +15,9 @@ def get_width_with_new_line(value):
 def get_column_widths(data):
     try:
         widths = []
-        rows = data[1]
+        rows = data[3]
         row_index = 0
-        k = 0.7
+        k = 1
         for row in rows:
             cell_index = 0
             for cell in row:
@@ -85,8 +85,8 @@ def get_column_widths(data):
                     widths[i] = _widths[i]
                 i += 1
 
-        min_width = 10
-        max_width =50
+        min_width = 15
+        max_width = 50
         index = 0
         for width in widths:
             if (width < min_width):
@@ -110,15 +110,40 @@ def generate_header_styles():
 def generate_text_style(workbook):
     cell_format = workbook.add_format()
     cell_format.set_text_wrap()
+    cell_format.set_align('vcenter')
+    return cell_format
+    pass
+
+def generate_header_style(workbook):
+    cell_format = workbook.add_format()
+    cell_format.set_bold()
+    cell_format.set_text_wrap()
     cell_format.set_align('center')
     cell_format.set_align('vcenter')
     return cell_format
     pass
 
-
-def generate_double_style(workbook):
+def generate_title_style(workbook):
     cell_format = workbook.add_format()
-    cell_format.set_num_format('#,##0.00')
+    cell_format.set_font_size(14)
+    cell_format.set_bold()
+    cell_format.set_text_wrap()
+    cell_format.set_align('vcenter')
+    return cell_format
+    pass
+
+def generate_subtitle_style(workbook):
+    cell_format = workbook.add_format()
+    cell_format.set_font_size(14)
+    cell_format.set_text_wrap()
+    cell_format.set_align('vcenter')
+    return cell_format
+    pass
+
+
+def generate_num_style(workbook):
+    cell_format = workbook.add_format()
+    cell_format.set_text_wrap()
     cell_format.set_align('center')
     cell_format.set_align('vcenter')
     return cell_format
@@ -134,29 +159,24 @@ def generate_date_style(workbook):
     pass
 
 
-def generate_worksheet_styles(workbook, worksheet, names):
+def generate_worksheet_styles(workbook, names):
     try:
-        columns = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-                   'U', 'V', 'W', 'X', 'Y']
-
-        index = 0
-
+        styles = []
         for name in names:
-            column = columns[index] + ':' + columns[index]
-            if (name == 'period'):
-                worksheet.set_column(column, None, generate_date_style(workbook))
-
-            if (
-                                        name == 'document' or name == 'account' or name == 'analyticsDebet' or name == 'analyticsCredit' or name == 'accountDebet' or name == 'accountCredit' or name == 'typeName'):
-                worksheet.set_column(column, None, generate_text_style(workbook))
-
-            if (
-                                                name == 'valueDebet' or name == 'valueCredit' or name == 'startPeriodBalanceDebet' or name == 'startPeriodBalanceCredit' or name == 'periodTransactionsDebet' or name == 'periodTransactionsCredit' or name == 'endPeriodBalanceDebet' or name == 'endPeriodBalanceCredit' or name == ''):
-                worksheet.set_column(column, None, generate_double_style(workbook))
-
-            index += 1
-            pass
-
-        pass
+            styles.append([])
+            for style in name:
+                if style == 'ota_title':
+                    stylea = generate_title_style(workbook)
+                elif style == 'ota_subtitle':
+                    stylea = generate_subtitle_style(workbook)
+                elif style == 'ota_header':
+                    stylea = generate_header_style(workbook)
+                elif style == 'ota_text':
+                    stylea = generate_text_style(workbook)
+                elif style == 'ota_num':
+                    stylea = generate_num_style(workbook)
+                else: stylea = None
+                styles[len(styles)-1].append(stylea)
+        return styles
     except Exception as e:
         pass

@@ -26,6 +26,12 @@ output_fields = {
     'client_name': fields.String(
         attribute=lambda x: x.order_data.client_address_data.related_clients.name
             if x.order_data else ''),
+    'client_address': fields.String(
+        attribute=lambda x: x.order_data.client_address_data.name
+            if x.order_data else ''),
+    'client_id': fields.String(
+        attribute=lambda x: x.order_data.client_address_data.client_id
+            if x.order_data else 0),
     'name': fields.String(
         attribute=lambda x: x.product_data.name if x.product_data else ''),
     'partner_id': fields.Integer(
@@ -71,7 +77,7 @@ class ExportOrdersResource(Resource):
             ['alt_amount_per_item', 'currency_display_value'],
             ['alt_amount_per_item_discount', 'currency_display_value'],
             ['total_amount', 'currency_display_value'],
-            ['client_name']
+            ['client_address']
         ]
 
         return [position.get(col[0], "-") if len(col) == 1
@@ -88,33 +94,46 @@ class ExportOrdersResource(Resource):
             if (len(args) == 0):
                 abort(400, message='Arguments not found')
             user_id = args['user_id']
-            orders_ids = args['orders_ids']
+            orders_ids = [int(x) for x in args['orders_ids'].split(',')]
             user_action_logging.log_user_actions(ROUTE, user_id, action_type)
 
             positions = session.query(OrderPositions) \
-                .filter(OrderPositions.order_id.in_([17]),
+                .filter(OrderPositions.order_id.in_(orders_ids),
                         OrderPositions.order_position_state_id != 2).all()
 
             if not positions:
                 abort(404, message="Positions {} doesn't exist".format(id))
             positions = marshal(positions, output_fields)
             titles = ["Наименование", "Артикул", "Количество", "Стоимость 1 ед.", "Скидка",
-                      "Количество", "Стоимость 1 ед.", "Скидка", "Итого", "Заказчик"]
+                      "Количество", "Стоимость 1 ед.", "Скидка", "Итого", "Адрес"]
             docs = {}
             for position in positions:
                 if position.get('partner_id', 0) != 0:
                     if position['partner_id'] in docs:
+                        docs[position['partner_id']]['client_name'] = position['client_name'] or ""
                         docs[position['partner_id']]['total'] += (position['total_amount'] or 0)
-                        docs[position['partner_id']]['positions'].append(self.get_row(position))
+                        if position['client_name'] in docs[position['partner_id']]['positions']:
+                            docs[position['partner_id']]['positions'][position['client_name']].append(self.get_row(position))
+                        else:
+                            docs[position['partner_id']]['positions'][position['client_name']]=[self.get_row(position)]
                     else:
                         docs[position['partner_id']] = {
                             'name': position['partner_name'],
                             'total': position['total_amount'] or 0,
                             'currency':position['currency_display_value'],
-                            'positions': [self.get_row(position)]
+                            'positions': {position['client_name']:[self.get_row(position)]}
                         }
-
-            export_folder, export_path = documents_exporter.export_order_positions(docs, titles)
+            styles_dict = {
+                'title':['ota_title'],
+                'subtitle':['ota_subtitle'],
+                'header': ['ota_header','ota_header','ota_header','ota_header','ota_header',
+                           'ota_header','ota_header','ota_header','ota_header','ota_header'],
+                'data_row': ['ota_text', 'ota_num', 'ota_num', 'ota_num', 'ota_num',
+                             'ota_num', 'ota_num', 'ota_num', 'ota_num', 'ota_text'],
+                'total_row': ['ota_text','ota_text','ota_text','ota_text','ota_text',
+                              'ota_text','ota_text','ota_header','ota_header','ota_text']
+            }
+            export_folder, export_path = documents_exporter.export_order_positions(docs, titles, styles_dict)
             return send_from_directory(export_folder,export_path, as_attachment=True)
 
 
