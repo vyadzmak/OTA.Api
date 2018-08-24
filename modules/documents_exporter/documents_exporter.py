@@ -89,7 +89,8 @@ def make_archive(source, destination):
     try:
         zip_loc = source
         zip_dest = destination
-        shutil.make_archive(base_dir=zip_loc, root_dir=zip_loc, format='zip', base_name=zip_dest)
+        shutil.make_archive(zip_loc, 'zip', zip_dest)
+        shutil.rmtree(zip_loc, ignore_errors=True)
     except Exception as e:
         pass
 
