@@ -109,7 +109,7 @@ class RouteOrdersResource(Resource):
             orders = []
             # check login
 
-            if (state_id == 1 or state_id == 3):
+            if (state_id == 1 or state_id == 3 or state_id == 4):
                 orders = session.query(Orders).filter(Orders.order_state_id == state_id).all()
                 t = 0
                 pass
