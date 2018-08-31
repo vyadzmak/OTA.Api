@@ -112,7 +112,6 @@ class ClientAddresses(Base):
 
     def __init__(self, *args):
         db_tranformer.transform_constructor_params(self, args)
-        self.confirmed = False
 
 
 # client info

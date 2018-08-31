@@ -74,11 +74,9 @@ def export_cells(worksheet, data, styles):
                     cell_index += 1
 
                     value = cell
-                    _format = styles[row_index-1][cell_index-1]
+                    _format = styles[row_index - 1][cell_index - 1]
                     if (_format != None):
                         worksheet.write(row_index - 1, cell_index - 1, value, _format)
-                        print(value)
-                        print(_format.text_h_align)
                     else:
                         worksheet.write(row_index - 1, cell_index - 1, value)
     except Exception as e:
@@ -95,7 +93,74 @@ def make_archive(source, destination):
         pass
 
 
-def export_order_positions(documents, titles, styles_dict):
+# def export_order_positions(documents, sub_titles, titles, styles_dict):
+#     try:
+#
+#         if (not documents):
+#             return None
+#
+#         dir_id = str(uuid.uuid4().hex)
+#         exports_folder = os.path.join(EXPORTS_FOLDER, dir_id)
+#         if not os.path.exists(exports_folder):
+#             os.makedirs(exports_folder)
+#         dtnow = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+#
+#         for document in documents.values():
+#
+#             partner_name = str(document['name']).replace('"', ' ')
+#             partner_name = translit(partner_name, 'ru', reversed=True)
+#
+#             dtnow = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+#             dt = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+#             dt = str(dt).replace('-', '')
+#             partner_name = partner_name + "_" + str(dt)
+#
+#             file_name = clean_filename(partner_name)
+#             file_name = file_name.replace('__', "_")
+#             file_path = os.path.join(exports_folder, file_name + ".xlsx")
+#
+#             if (len(file_path) > 255):
+#                 file_path = os.path.join(exports_folder, dir_id + ".xlsx")
+#             converted_data_rows = [[['ТН для {}'.format(document['name']), dtnow]]]
+#             names = [styles_dict['title']]
+#             for client_name, positions in document['positions'].items():
+#                 names.append(styles_dict['subtitle'])
+#                 names.append(styles_dict['subtitle_text'])
+#                 names.append(styles_dict['header'])
+#                 for i in range(len(positions)):
+#                     names.append(styles_dict['data_row'])
+#                 converted_data_rows.append([sub_titles])
+#                 converted_data_rows.append([[client_name, document.get('client_emails', None).get(client_name, ''),
+#                                              document.get('client_registrations', None).get(client_name, '')]])
+#                 converted_data_rows.append([titles])
+#                 converted_data_rows.append(positions)
+#
+#             names.append(styles_dict['total_row'])
+#             converted_data_rows.append(
+#                 [['', '', '', '', '', '', '', 'Итого', '{} {}'.format(document['total'], document['currency'])]])
+#
+#             workbook = xlsxwriter.Workbook(file_path)
+#             sheet_name = document['name'][:28]
+#             worksheet = workbook.add_worksheet(sheet_name)
+#             widths = formatter.get_column_widths(converted_data_rows)
+#             styles = formatter.generate_worksheet_styles(workbook, names)
+#             index = 0
+#             for width in widths:
+#                 worksheet.set_column(index, index, width)
+#                 index += 1
+#
+#             export_cells(worksheet, converted_data_rows, styles)
+#             workbook.close()
+#
+#         zip_name = exports_folder
+#         make_archive(exports_folder, zip_name)
+#
+#         return EXPORTS_FOLDER, str(dir_id) + ".zip"
+#         pass
+#     except Exception as e:
+#         pass
+
+def export_order_positions(documents):
     try:
 
         if (not documents):
@@ -111,7 +176,6 @@ def export_order_positions(documents, titles, styles_dict):
             partner_name = str(document['name']).replace('"', ' ')
             partner_name = translit(partner_name, 'ru', reversed=True)
 
-            dtnow = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
             dt = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             dt = str(dt).replace('-', '')
             partner_name = partner_name + "_" + str(dt)
@@ -122,32 +186,18 @@ def export_order_positions(documents, titles, styles_dict):
 
             if (len(file_path) > 255):
                 file_path = os.path.join(exports_folder, dir_id + ".xlsx")
-            converted_data_rows = [[['ТН для {} от {}'.format(document['name'], dtnow)]]]
-            names = [styles_dict['title']]
-            for client_name, positions in document['positions'].items():
-                names.append(styles_dict['subtitle'])
-                names.append(styles_dict['header'])
-                for i in range(len(positions)):
-                    names.append(styles_dict['data_row'])
-                converted_data_rows.append([[client_name]])
-                converted_data_rows.append([titles])
-                converted_data_rows.append(positions)
-
-            names.append(styles_dict['total_row'])
-            converted_data_rows.append([['','','','','','','','Итого','{}{}'.format(document['total'], document['currency'])]])
-
 
             workbook = xlsxwriter.Workbook(file_path)
-            sheet_name = document['name']
+            sheet_name = document['name'][:28]
             worksheet = workbook.add_worksheet(sheet_name)
-            widths = formatter.get_column_widths(converted_data_rows)
-            styles = formatter.generate_worksheet_styles(workbook, names)
+            widths = formatter.get_column_widths(document['rows'])
+            styles = formatter.generate_worksheet_styles(workbook, document['styles'])
             index = 0
             for width in widths:
                 worksheet.set_column(index, index, width)
                 index += 1
 
-            export_cells(worksheet, converted_data_rows, styles)
+            export_cells(worksheet, document['rows'], styles)
             workbook.close()
 
         zip_name = exports_folder
