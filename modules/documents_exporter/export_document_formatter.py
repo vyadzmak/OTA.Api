@@ -56,8 +56,6 @@ def get_column_widths(data):
             for row in rows:
                 cell_index = 0
                 for cell in row:
-                    if cell is None:
-                        print(row)
                     if (row_index == 0):
                         # value =cell
 
