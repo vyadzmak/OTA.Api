@@ -1,70 +1,10 @@
-from models.db_models.models import OrderPositions, PartnersCatalog, Products
+from models.db_models.models import OrderPositions
 from db.db import session
-from flask import Flask, jsonify, request
 from flask_restful import Resource, fields, marshal, abort, reqparse
-from sqlalchemy import desc
-from flask import Flask, make_response, send_from_directory, send_file
-from flask import Response
-import urllib.parse as urllib
+from flask import send_from_directory
 import datetime
 import modules.documents_exporter.documents_exporter as documents_exporter
 import modules.db_help_modules.user_action_logging_module as user_action_logging
-
-# OUTPUT SCHEMA
-# output_fields = {
-#     'id': fields.Integer,
-#     'product_id': fields.Integer,
-#     'order_id': fields.Integer,
-#     'count': fields.Float,
-#     'alt_count': fields.Float,
-#     'description': fields.String,
-#     'need_invoice': fields.Boolean,
-#     'amount_per_item': fields.Float,
-#     'alt_amount_per_item': fields.Float,
-#     'amount_per_item_discount': fields.Float,
-#     'alt_amount_per_item_discount': fields.Float,
-#     'total_amount': fields.Float,
-#     'client_name': fields.String(
-#         attribute=lambda x: x.order_data.client_address_data.related_clients.name
-#         if x.order_data and x.order_data.client_address_data
-#            and x.order_data.client_address_data.related_clients else ''),
-#     'client_address': fields.String(
-#         attribute=lambda x: x.order_data.client_address_data.address
-#         if x.order_data and x.order_data.client_address_data else ''),
-#     'client_email': fields.String(
-#         attribute=lambda x: x.order_data.client_address_data.related_clients.client_info_data[0].email
-#         if x.order_data and x.order_data.client_address_data
-#            and x.order_data.client_address_data.related_clients
-#            and x.order_data.client_address_data.related_clients.client_info_data
-#            and len(x.order_data.client_address_data.related_clients.client_info_data) > 0 else ''),
-#     'registration_number': fields.String(
-#         attribute=lambda x: x.order_data.client_address_data.related_clients.registration_number
-#         if x.order_data and x.order_data.client_address_data
-#            and x.order_data.client_address_data.related_clients else ''),
-#     'client_id': fields.String(
-#         attribute=lambda x: x.order_data.client_address_data.client_id
-#         if x.order_data and x.order_data.client_address_data else 0),
-#     'name': fields.String(
-#         attribute=lambda x: x.product_data.name if x.product_data else ''),
-#     'partner_id': fields.Integer(
-#         attribute=lambda x: x.product_data.partner_id if x.product_data else 0),
-#     'product_code': fields.String(
-#         attribute=lambda x: x.product_data.product_code if x.product_data else ''),
-#     'is_stock_product': fields.Boolean(
-#         attribute=lambda x: x.product_data.is_stock_product if x.product_data else False),
-#     'unit_display_value': fields.String(
-#         attribute=lambda x: x.product_data.product_unit_data.display_value
-#         if x.product_data and x.product_data.product_unit_data else ''),
-#     'alt_unit_display_value': fields.String(
-#         attribute=lambda x: x.product_data.product_alt_unit_data.display_value
-#         if x.product_data and x.product_data.product_alt_unit_data else ''),
-#     'currency_display_value': fields.String(
-#         attribute=lambda x: x.product_data.product_currency_data.display_value
-#         if x.product_data and x.product_data.product_currency_data else ''),
-#     'partner_name': fields.String(
-#         attribute=lambda x: x.product_data.partner_data.name
-#         if x.product_data and x.product_data.partner_data else '')
-# }
 
 output_fields = {
     'id': fields.Integer,
@@ -88,14 +28,14 @@ output_fields = {
     'client_address': fields.String(
         attribute=lambda x: x.order_data.client_address_data.address
         if x.order_data and x.order_data.client_address_data
-            and x.order_data.client_address_data.address else '-'),
+           and x.order_data.client_address_data.address else '-'),
     'client_address_name': fields.String(
         attribute=lambda x: x.order_data.client_address_data.name
         if x.order_data and x.order_data.client_address_data else '-'),
     'client_phone': fields.String(
         attribute=lambda x: x.order_data.client_address_data.phone_number
         if x.order_data and x.order_data.client_address_data
-            and x.order_data.client_address_data.phone_number else '-'),
+           and x.order_data.client_address_data.phone_number else '-'),
     'client_email': fields.String(
         attribute=lambda x: x.order_data.client_address_data.related_clients.client_info_data[0].email
         if x.order_data and x.order_data.client_address_data
@@ -131,11 +71,11 @@ output_fields = {
     'currency_display_value': fields.String(
         attribute=lambda x: x.product_data.product_currency_data.display_value
         if x.product_data and x.product_data.product_currency_data
-            and x.product_data.product_currency_data.display_value else '-'),
+           and x.product_data.product_currency_data.display_value else '-'),
     'partner_name': fields.String(
         attribute=lambda x: x.product_data.partner_data.name
         if x.product_data and x.product_data.partner_data
-            and x.product_data.partner_data.name else '-')
+           and x.product_data.partner_data.name else '-')
 }
 
 # PARAMS
@@ -143,122 +83,6 @@ ENTITY_NAME = "Export Orders"
 ROUTE = "/exportOrders"
 END_POINT = "export-orders"
 
-
-# class ExportOrdersResource(Resource):
-#     def __init__(self):
-#         self.route = ROUTE
-#         self.end_point = END_POINT
-#         pass
-#
-#     def get_row(self, position):
-#         cols = [
-#             ['name'],
-#             ['product_code'],
-#             ['count', 'unit_display_value'],
-#             ['amount_per_item', 'currency_display_value'],
-#             ['amount_per_item_discount', 'currency_display_value'],
-#             ['alt_count', 'alt_unit_display_value'],
-#             ['alt_amount_per_item', 'currency_display_value'],
-#             ['alt_amount_per_item_discount', 'currency_display_value'],
-#             ['total_amount', 'currency_display_value'],
-#             ['client_address']
-#         ]
-#
-#         return [position.get(col[0], "-") if len(col) == 1
-#                 else '{} {}'.format(position[col[0]] or 0, position[col[1]])
-#                 for col in cols]
-#
-#     def get(self):
-#         try:
-#             action_type = 'GET'
-#             parser = reqparse.RequestParser()
-#             parser.add_argument('user_id')
-#             parser.add_argument('orders_ids')
-#             args = parser.parse_args()
-#             if (len(args) == 0):
-#                 abort(400, message='Arguments not found')
-#             user_id = args['user_id']
-#             orders_ids = [int(x) for x in args['orders_ids'].split(',')]
-#             user_action_logging.log_user_actions(ROUTE, user_id, action_type)
-#
-#             positions = session.query(OrderPositions) \
-#                 .filter(OrderPositions.order_id.in_(orders_ids),
-#                         OrderPositions.order_position_state_id != 2).all()
-#
-#             if not positions:
-#                 abort(404, message="Positions {} doesn't exist".format(id))
-#             positions = marshal(positions, output_fields)
-#             titles = ["Наименование", "Артикул", "Количество", "Стоимость 1 ед.", "Скидка",
-#                       "Количество", "Стоимость 1 ед.", "Скидка", "Итого", "Адрес"]
-#             sub_titles = ["Клиент", "Регистрация", "БИН/ИИН"]
-#             docs = {}
-#             for position in positions:
-#                 if position.get('partner_id', 0) != 0:
-#                     if position['partner_id'] in docs:
-#                         docs[position['partner_id']]['client_emails'][position['client_name']] = position[
-#                                                                                                      'client_email'] or ""
-#                         docs[position['partner_id']]['client_registrations'][position['client_name']] = position[
-#                                                                                                             'registration_number'] or ""
-#                         docs[position['partner_id']]['total'] += (position['total_amount'] or 0)
-#                         if position['client_name'] in docs[position['partner_id']]['positions']:
-#                             docs[position['partner_id']]['positions'][position['client_name']].append(
-#                                 self.get_row(position))
-#                         else:
-#                             docs[position['partner_id']]['positions'][position['client_name']] = [
-#                                 self.get_row(position)]
-#                     else:
-#                         docs[position['partner_id']] = {
-#                             'name': position['partner_name'],
-#                             'total': position['total_amount'] or 0,
-#                             'currency': position['currency_display_value'],
-#                             'positions': {position['client_name']: [self.get_row(position)]},
-#                             'client_emails': {position['client_name']: position['client_email'] or ""},
-#                             'client_registrations': {position['client_name']: position['registration_number'] or ""}
-#                         }
-#             styles_dict = {
-#                 'title': ['ota_title', 'ota_text'],
-#                 'subtitle': ['ota_subtitle', 'ota_subtitle', 'ota_subtitle'],
-#                 'subtitle_text': ['ota_text', 'ota_text', 'ota_text'],
-#                 'header': ['ota_header', 'ota_header', 'ota_header', 'ota_header', 'ota_header',
-#                            'ota_header', 'ota_header', 'ota_header', 'ota_header', 'ota_header'],
-#                 'data_row': ['ota_text', 'ota_num', 'ota_num', 'ota_num', 'ota_num',
-#                              'ota_num', 'ota_num', 'ota_num', 'ota_num', 'ota_text'],
-#                 'total_row': ['ota_text', 'ota_text', 'ota_text', 'ota_text', 'ota_text',
-#                               'ota_text', 'ota_text', 'ota_header', 'ota_header', 'ota_text']
-#             }
-#
-#             documents = {}
-#             dtnow = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-#             for key, document in docs.items():
-#                 converted_data_rows = [[['ТН для {}'.format(document['name']), dtnow]]]
-#                 names = [styles_dict['title']]
-#                 for client_name, positions in document['positions'].items():
-#                     names.append(styles_dict['subtitle'])
-#                     names.append(styles_dict['subtitle_text'])
-#                     names.append(styles_dict['header'])
-#                     for i in range(len(positions)):
-#                         names.append(styles_dict['data_row'])
-#                     converted_data_rows.append([sub_titles])
-#                     converted_data_rows.append([[client_name, document.get('client_emails', None).get(client_name, ''),
-#                                                  document.get('client_registrations', None).get(client_name, '')]])
-#                     converted_data_rows.append([titles])
-#                     converted_data_rows.append(positions)
-#
-#                 names.append(styles_dict['total_row'])
-#                 converted_data_rows.append(
-#                     [['', '', '', '', '', '', '', 'Итого', '{} {}'.format(document['total'], document['currency'])]])
-#                 documents[key] = {
-#                     'name': document['name'],
-#                     'rows': converted_data_rows,
-#                     'styles': names
-#                 }
-#
-#             export_folder, export_path = documents_exporter.export_order_positions(documents)
-#             return send_from_directory(export_folder, export_path, as_attachment=True)
-#
-#
-#         except Exception as e:
-#             return {}
 
 class ExportOrdersResource(Resource):
     def __init__(self):
@@ -277,8 +101,8 @@ class ExportOrdersResource(Resource):
             ['need_invoice']
         ]
         rr = [position.get(col[0], "-") if len(col) == 1
-                else '{} {}'.format(position[col[0]] or 0, position[col[1]])
-                for col in cols]
+              else '{} {}'.format(position[col[0]] or 0, position[col[1]])
+              for col in cols]
         return rr
 
     def get(self):
@@ -311,6 +135,9 @@ class ExportOrdersResource(Resource):
                     curr_pos = pos.copy()
                     for alt_key in alt_keys:
                         curr_pos.pop(alt_key)
+                    if curr_pos['amount_per_item_discount'] > 0:
+                        curr_pos['amount_per_item_discount'] = curr_pos['amount_per_item'] - curr_pos[
+                            'amount_per_item_discount']
                     curr_pos['total_amount'] = curr_pos['count'] * (
                         curr_pos['amount_per_item'] - curr_pos['amount_per_item_discount'])
                     positions.append(curr_pos)
@@ -321,6 +148,9 @@ class ExportOrdersResource(Resource):
                         curr_pos[curr_key] = curr_pos[alt_key]
                     for alt_key in alt_keys:
                         curr_pos.pop(alt_key)
+                    if curr_pos['amount_per_item_discount'] > 0:
+                        curr_pos['amount_per_item_discount'] = curr_pos['amount_per_item'] - curr_pos[
+                            'amount_per_item_discount']
                     curr_pos['total_amount'] = curr_pos['count'] * (
                         curr_pos['amount_per_item'] - curr_pos['amount_per_item_discount'])
                     positions.append(curr_pos)
@@ -340,12 +170,15 @@ class ExportOrdersResource(Resource):
                                     docs[position['partner_id']]['clients'][position['client_id']]['shops']:
                                 docs[position['partner_id']]['clients'][position['client_id']]['shops'][
                                     position['client_address_id']]['positions'].append(position)
+                                docs[position['partner_id']]['clients'][position['client_id']]['shops'][
+                                    position['client_address_id']]['total'] += position['total_amount']
                             else:
                                 docs[position['partner_id']]['clients'][position['client_id']]['shops'][
                                     position['client_address_id']] = {
                                     'name': position['client_address_name'],
                                     'address': position['client_address'],
                                     'phone': position['client_phone'],
+                                    'total': position['total_amount'] or 0,
                                     'positions': [position]
                                 }
                         else:
@@ -356,6 +189,7 @@ class ExportOrdersResource(Resource):
                                 'shops': {position['client_address_id']: {
                                     'name': position['client_address_name'],
                                     'address': position['client_address'],
+                                    'total': position['total_amount'] or 0,
                                     'phone': position['client_phone'],
                                     'positions': [position]
                                 }}
@@ -372,6 +206,7 @@ class ExportOrdersResource(Resource):
                                 'shops': {position['client_address_id']: {
                                     'name': position['client_address_name'],
                                     'address': position['client_address'],
+                                    'total': position['total_amount'] or 0,
                                     'phone': position['client_phone'],
                                     'positions': [position]
                                 }}
@@ -415,9 +250,13 @@ class ExportOrdersResource(Resource):
                             names.append(styles_dict['data_row'])
                             converted_data_rows.append([self.get_row(position)])
 
+                        names.append(styles_dict['total_row'])
+                        converted_data_rows.append(
+                            [['', '', '', '', 'Итого', '{} {}'.format(shop['total'], document['currency'])]])
+
                 names.append(styles_dict['total_row'])
                 converted_data_rows.append(
-                    [['', '', '', '', 'Итого', '{} {}'.format(document['total'], document['currency'])]])
+                    [['', '', '', '', 'Сум. Итого', '{} {}'.format(document['total'], document['currency'])]])
                 documents[key] = {
                     'name': document['name'],
                     'rows': converted_data_rows,

@@ -313,6 +313,8 @@ class FilterProductResource(Resource):
             elif (str(filter_parameter) == '10'):
                 products = self.filter_by_product_name_or_partner_name(filter_value)
 
+            products = [x for x in products if x.is_delete == False]
+
             if not products:
                 abort(400, message='Ошибка получения данных. Данные не найдены')
             for product in products:

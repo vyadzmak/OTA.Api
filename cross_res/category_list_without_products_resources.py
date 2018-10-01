@@ -46,7 +46,7 @@ class CategoryListWithoutProductsResource(Resource):
             user_id = args['user_id']
 
             user_action_logging.log_user_actions(ROUTE,user_id, action_type)
-            product_categories = session.query(ProductCategories).all()
+            product_categories = session.query(ProductCategories).filter(ProductCategories.is_delete == False).all()
             if not product_categories:
                 abort(400, message='Ошибка получения данных. Данные не найдены')
 

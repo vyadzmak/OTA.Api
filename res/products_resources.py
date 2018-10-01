@@ -178,6 +178,15 @@ class ProductsResource(Resource):
             entity = session.query(MODEL).filter(MODEL.id == id).first()
             if not entity:
                 abort(404, message=ENTITY_NAME + " {} doesn't exist".format(id))
+            product_positions = session.query(ProductsPositions).filter(
+                ProductsPositions.products_positions.any(entity.id)).all()
+            if product_positions is not None:
+                session.bulk_update_mappings(ProductsPositions, [{'id': x.id,
+                                                                  'products_positions': list(
+                                                                      filter(lambda y: y != entity.id,
+                                                                             x.products_positions))}
+                                                                 for x in product_positions])
+                session.commit()
             db_transformer.transform_update_params(entity, json_data)
 
             session.add(entity)
