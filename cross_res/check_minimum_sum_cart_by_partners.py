@@ -92,11 +92,11 @@ class CheckMinimumSumCartByPartnersResource(Resource):
                             if alt_count is None:
                                 alt_count = 0
                             single_amount = product.amount
-                            if product.amount_per_item_discount > 0:
-                                single_amount = product.amount_per_item_discount
+                            if product.discount_amount > 0:
+                                single_amount = product.discount_amount
                             alt_single_amount = product.alt_amount
-                            if product.alt_amount_per_item_discount > 0:
-                                alt_single_amount = product.alt_amount_per_item_discount
+                            if product.alt_discount_amount > 0:
+                                alt_single_amount = product.alt_discount_amount
                             if alt_single_amount is None:
                                 alt_single_amount = 0
                             amount = count * single_amount
