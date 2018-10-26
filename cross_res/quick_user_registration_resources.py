@@ -87,6 +87,10 @@ class QuickUserRegistrationResource(Resource):
     def post(self):
         error_message = ""
         try:
+            # send_user_phone = '+77077750095'
+            # send_code = '0945'
+            # sms_sender.send_sms(send_user_phone, send_code)
+
             json_data = request.get_json(force=True)
 
             phone_number = json_data['phone_number']
@@ -164,6 +168,7 @@ class QuickUserRegistrationResource(Resource):
 
             send_user_phone = '+'+phone_number
             # send_user_phone = '+77077750095'
+                                # 77718961663
             send_code = str(user_confirmation_entity.code)
             sms_sender.send_sms(send_user_phone,send_code)
             return user, 201

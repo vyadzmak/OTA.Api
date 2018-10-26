@@ -7,7 +7,8 @@ def send_sms(phone, message):
         # r = smsc.send_sms(phone, "Код подтверждения: "+message, sender="sms")
         login = "sundet_ota"
         password = "ota12345"
-        url = "http://cabinet.brandsms.kz/sys/send.php?login="+login+"&psw="+password+"&phones="+phone+"&mes="+message
+        message="Код подтверждения: "+message
+        url = "http://cabinet.brandsms.kz/sys/send.php?login="+login+"&psw="+password+"&phones="+phone+"&mes="+message+"&charset=utf-8"
         r = requests.get(url)
 
         sundet_phone_number ='+77077750095'
