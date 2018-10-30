@@ -82,14 +82,14 @@ class ProductsCategoriesByProductCategoryResource(Resource):
             product_category_position = session.query(ProductCategoryPositions) \
                 .filter(ProductCategoryPositions.parent_category_id == category_id).first()
             if product_category_position is not None and len(product_category_position.child_category_positions) > 0:
-                positioned_categories = {x: x for x in product_category_position.child_category_positions}
+                positioned_categories = [x for x in product_category_position.child_category_positions]
                 other_categories = []
                 for cat in product_categories:
                     if cat.id in product_category_position.child_category_positions:
-                        positioned_categories[cat.id] = cat
+                        positioned_categories[positioned_categories.index(cat.id)] = cat
                     else:
                         other_categories.append(cat)
-                    product_categories = list(positioned_categories.values()) + other_categories
+                product_categories = positioned_categories + other_categories
 
             return product_categories
         except Exception as e:

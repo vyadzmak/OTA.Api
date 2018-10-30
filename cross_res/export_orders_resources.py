@@ -32,6 +32,15 @@ output_fields = {
     'client_address_name': fields.String(
         attribute=lambda x: x.order_data.client_address_data.name
         if x.order_data and x.order_data.client_address_data else '-'),
+    'client_city_name': fields.String(
+        attribute=lambda x: x.order_data.client_address_data.city_data.name
+        if x.order_data and x.order_data.client_address_data
+           and x.order_data.client_address_data.city_data else '-'),
+    'client_area_name': fields.String(
+        attribute=lambda x: x.order_data.client_address_data.city_data.area_data.name
+        if x.order_data and x.order_data.client_address_data
+           and x.order_data.client_address_data.city_data
+           and x.order_data.client_address_data.city_data.area_data else '-'),
     'client_phone': fields.String(
         attribute=lambda x: x.order_data.client_address_data.phone_number
         if x.order_data and x.order_data.client_address_data
@@ -159,7 +168,7 @@ class ExportOrdersResource(Resource):
 
             titles = ["Наименование", "Артикул", "Количество", "Стоимость 1 ед.", "Скидка", "Итого", "Накладная"]
             sub_titles = ["Клиент", "Регистрация", "БИН/ИИН"]
-            shop_sub_titles = ["Магазин", "Адрес", "Телефон"]
+            shop_sub_titles = ["Магазин", "Адрес", "Город/а.е.", "Регион/Область", "Телефон"]
             docs = {}
             for position in positions:
                 if position.get('partner_id', 0) != 0:
@@ -177,6 +186,8 @@ class ExportOrdersResource(Resource):
                                     position['client_address_id']] = {
                                     'name': position['client_address_name'],
                                     'address': position['client_address'],
+                                    'city': position['client_city_name'],
+                                    'area': position['client_area_name'],
                                     'phone': position['client_phone'],
                                     'total': position['total_amount'] or 0,
                                     'positions': [position]
@@ -189,6 +200,8 @@ class ExportOrdersResource(Resource):
                                 'shops': {position['client_address_id']: {
                                     'name': position['client_address_name'],
                                     'address': position['client_address'],
+                                    'city': position['client_city_name'],
+                                    'area': position['client_area_name'],
                                     'total': position['total_amount'] or 0,
                                     'phone': position['client_phone'],
                                     'positions': [position]
@@ -206,6 +219,8 @@ class ExportOrdersResource(Resource):
                                 'shops': {position['client_address_id']: {
                                     'name': position['client_address_name'],
                                     'address': position['client_address'],
+                                    'city': position['client_city_name'],
+                                    'area': position['client_area_name'],
                                     'total': position['total_amount'] or 0,
                                     'phone': position['client_phone'],
                                     'positions': [position]
@@ -216,8 +231,8 @@ class ExportOrdersResource(Resource):
                 'title': ['ota_title', 'ota_text'],
                 'subtitle': ['ota_subtitle', 'ota_subtitle', 'ota_subtitle'],
                 'subtitle_text': ['ota_text', 'ota_text', 'ota_text'],
-                'shop_subtitle': ['shop_ota_subtitle', 'shop_ota_subtitle', 'shop_ota_subtitle'],
-                'shop_subtitle_text': ['ota_text', 'ota_text', 'ota_text'],
+                'shop_subtitle': ['shop_ota_subtitle', 'shop_ota_subtitle', 'shop_ota_subtitle', 'shop_ota_subtitle', 'shop_ota_subtitle'],
+                'shop_subtitle_text': ['ota_text', 'ota_text', 'ota_text', 'ota_text', 'ota_text'],
                 'header': ['ota_header', 'ota_header', 'ota_header', 'ota_header', 'ota_header',
                            'ota_header', 'ota_header'],
                 'data_row': ['ota_text', 'ota_num', 'ota_num', 'ota_num', 'ota_num',
@@ -243,6 +258,8 @@ class ExportOrdersResource(Resource):
                         converted_data_rows.append([shop_sub_titles])
                         converted_data_rows.append([[shop.get('name', ""),
                                                      shop.get('address', ""),
+                                                     shop.get('city', ""),
+                                                     shop.get('area', ""),
                                                      shop.get('phone', "")]])
                         names.append(styles_dict['header'])
                         converted_data_rows.append([titles])
