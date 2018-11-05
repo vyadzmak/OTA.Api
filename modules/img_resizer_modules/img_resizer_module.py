@@ -31,7 +31,7 @@ def resize_image(file_path,output_path,target_size):
                 elif (original_width>original_height):
                     resize_k = target_width/original_width
 
-                elif (original_height>original_width):
+                elif (original_height>=original_width):
                     resize_k = target_height/original_height
 
                 out_width =round(original_width*resize_k,0)

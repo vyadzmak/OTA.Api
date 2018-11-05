@@ -20,7 +20,10 @@ currency_data_fields = {
     'name': fields.String,
     'is_default': fields.Boolean
 }
-
+partner_data_fields = {
+    'id': fields.Integer,
+    'name': fields.String
+}
 unit_data_fields = {
     'id': fields.Integer,
     'system_name': fields.String,
@@ -71,7 +74,8 @@ product_data_fields ={
     'alt_amount': fields.Float,
     'alt_unit_value': fields.Float,
     'alt_unit_id': fields.Integer,
-    'alt_discount_amount': fields.Float
+    'alt_discount_amount': fields.Float,
+    'partner_data': fields.Nested(partner_data_fields),
 
 }
 
