@@ -115,7 +115,7 @@ class ProductsByProductCategoryResource(Resource):
 
             user_action_logging.log_user_actions(ROUTE, user_id, action_type)
             products = session.query(Products).filter(Products.category_id == category_id,
-                                                      Products.is_delete == False).order_by(desc(Products.id)).all()
+                                                      Products.is_delete == False).order_by(Products.amount).all()
             # products = products.
             if not products:
                 abort(400, message='Ошибка получения данных. Данные не найдены')
@@ -142,14 +142,14 @@ class ProductsByProductCategoryResource(Resource):
             product_position = session.query(ProductsPositions) \
                 .filter(ProductsPositions.category_id == category_id).first()
             if product_position is not None and len(product_position.products_positions) > 0:
-                positioned_products = {x: x for x in product_position.products_positions}
+                positioned_products = [x for x in product_position.products_positions]
                 other_prods = []
                 for prod in products:
                     if prod.id in product_position.products_positions:
-                        positioned_products[prod.id] = prod
+                        positioned_products[positioned_products.index(prod.id)] = prod
                     else:
                         other_prods.append(prod)
-                products = list(positioned_products.values()) + other_prods
+                products = positioned_products + other_prods
             # products.internal_products_count = len(products)
 
             return products
