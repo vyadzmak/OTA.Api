@@ -34,7 +34,6 @@ output_fields = {
     'default_image_data_brands':fields.Nested(default_image_data_brands),
     'images_data':fields.Nested(default_image_data_brands),
     'products_count': fields.Integer
-
 }
 
 
@@ -66,7 +65,9 @@ class BrandsResource(Resource):
 
             entity.products_count = 0
 
-            products = session.query(Products).filter(Products.brand_id == entity.id).all()
+            products = session.query(Products).filter(Products.brand_id == entity.id,
+                                                      Products.not_show_in_catalog != True,
+                                                      Products.is_delete != True).all()
 
             if (not products):
                 entity.products_count = 0
@@ -118,7 +119,9 @@ class BrandsResource(Resource):
 
             entity.products_count = 0
 
-            products = session.query(Products).filter(Products.brand_id == entity.id).all()
+            products = session.query(Products).filter(Products.brand_id == entity.id,
+                                                      Products.not_show_in_catalog != True,
+                                                      Products.is_delete != True).all()
 
             if (not products):
                 entity.products_count = 0
@@ -159,7 +162,9 @@ class BrandsListResource(Resource):
 
                 entity.products_count = 0
 
-                products = session.query(Products).filter(Products.brand_id == entity.id).all()
+                products = session.query(Products).filter(Products.brand_id == entity.id,
+                                                      Products.not_show_in_catalog != True,
+                                                      Products.is_delete != True).all()
 
                 if (not products):
                     entity.products_count = 0

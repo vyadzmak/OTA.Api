@@ -80,7 +80,7 @@ def export_cells(worksheet, data, styles):
                     else:
                         worksheet.write(row_index - 1, cell_index - 1, value)
     except Exception as e:
-        pass
+        raise e
 
 
 def make_archive(source, destination):

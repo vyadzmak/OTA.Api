@@ -377,7 +377,7 @@ class ProductCategories(Base):
 
     internal_products_count = column_property(
         select([func.count(Products.id)]). \
-            where(and_(Products.category_id == id, Products.is_delete == False)). \
+            where(and_(Products.category_id == id, Products.is_delete == False, Products.not_show_in_catalog == False)). \
             correlate_except(Products)
     )
 
@@ -395,7 +395,7 @@ class ProductCategories(Base):
         return object_session(self). \
             scalar(
             select([func.count(Products.id)]) \
-            .where(and_(Products.category_id.in_(child_ids), Products.is_delete == False))
+            .where(and_(Products.category_id.in_(child_ids), Products.is_delete == False, Products.not_show_in_catalog == False))
         )
 
     def __init__(self, *args):
@@ -419,7 +419,7 @@ class PartnersCatalog(Base):
 
     products_count = column_property(
         select([func.count(Products.id)]). \
-            where(and_(Products.partner_id == id, Products.is_delete == False)). \
+            where(and_(Products.partner_id == id, Products.is_delete == False, Products.not_show_in_catalog == False)). \
             correlate_except(Products)
     )
 

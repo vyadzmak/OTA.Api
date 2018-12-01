@@ -68,7 +68,7 @@ output_fields = {
         attribute=lambda x: x.product_data.partner_id if x.product_data else 0),
     'product_code': fields.String(
         attribute=lambda x: x.product_data.product_code if x.product_data else '-'),
-    'is_stock_product': fields.Boolean(
+    'is_stock_product': fields.String(
         attribute=lambda x: 'Да' if x.product_data and x.product_data.is_stock_product else 'Нет'),
     'unit_display_value': fields.String(
         attribute=lambda x: x.product_data.product_unit_data.display_value
@@ -107,7 +107,8 @@ class ExportOrdersResource(Resource):
             ['amount_per_item', 'currency_display_value'],
             ['amount_per_item_discount', 'currency_display_value'],
             ['total_amount', 'currency_display_value'],
-            ['need_invoice']
+            ['need_invoice'],
+            ['is_stock_product']
         ]
         rr = [position.get(col[0], "-") if len(col) == 1
               else '{} {}'.format(position[col[0]] or 0, position[col[1]])
@@ -166,7 +167,7 @@ class ExportOrdersResource(Resource):
             if len(positions) == 0:
                 return "All products have 0 count. Nothing to download."
 
-            titles = ["Наименование", "Артикул", "Количество", "Стоимость 1 ед.", "Скидка", "Итого", "Накладная"]
+            titles = ["Наименование", "Артикул", "Количество", "Стоимость 1 ед.", "Скидка", "Итого", "Накладная", "Акция"]
             sub_titles = ["Клиент", "Регистрация", "БИН/ИИН"]
             shop_sub_titles = ["Магазин", "Адрес", "Город/а.е.", "Регион/Область", "Телефон"]
             docs = {}
@@ -234,9 +235,9 @@ class ExportOrdersResource(Resource):
                 'shop_subtitle': ['shop_ota_subtitle', 'shop_ota_subtitle', 'shop_ota_subtitle', 'shop_ota_subtitle', 'shop_ota_subtitle'],
                 'shop_subtitle_text': ['ota_text', 'ota_text', 'ota_text', 'ota_text', 'ota_text'],
                 'header': ['ota_header', 'ota_header', 'ota_header', 'ota_header', 'ota_header',
-                           'ota_header', 'ota_header'],
+                           'ota_header', 'ota_header', 'ota_header'],
                 'data_row': ['ota_text', 'ota_num', 'ota_num', 'ota_num', 'ota_num',
-                             'ota_num', 'ota_text'],
+                             'ota_num', 'ota_text', 'ota_text'],
                 'total_row': ['ota_text', 'ota_text', 'ota_text', 'ota_text',
                               'ota_header', 'ota_header']
             }
