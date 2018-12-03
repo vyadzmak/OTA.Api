@@ -160,7 +160,7 @@ def make_archive(source, destination):
 #     except Exception as e:
 #         pass
 
-def export_order_positions(documents):
+def export_order_positions(documents, system_rows_count):
     try:
 
         if (not documents):
@@ -190,7 +190,7 @@ def export_order_positions(documents):
             workbook = xlsxwriter.Workbook(file_path)
             sheet_name = document['name'][:28]
             worksheet = workbook.add_worksheet(sheet_name)
-            widths = formatter.get_column_widths(document['rows'])
+            widths = formatter.get_column_widths(document['rows'], system_rows_count)
             styles = formatter.generate_worksheet_styles(workbook, document['styles'])
             index = 0
             for width in widths:

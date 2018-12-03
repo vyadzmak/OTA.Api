@@ -29,6 +29,9 @@ output_fields = {
     'client_address_name': fields.String(
         attribute=lambda x: x.client_address_data.name
         if x.client_address_data else '-'),
+    'client_address_code': fields.String(
+        attribute=lambda x: x.client_address_data.code
+        if x.client_address_data else '-'),
     'client_city_name': fields.String(
         attribute=lambda x: x.client_address_data.city_data.name
         if x.client_address_data
@@ -59,6 +62,7 @@ class ExportOrdersByDateResource(Resource):
             ['client_area_name'],
             ['client_city_name'],
             ['client_address_name'],
+            ['client_address_code'],
             ['total_amount', 'currency_display_value']
         ]
         rr = [position.get(col[0], "-") if len(col) == 1
@@ -85,44 +89,49 @@ class ExportOrdersByDateResource(Resource):
 
             orders = session.query(Orders) \
                 .filter(Orders.order_state_id.in_(order_state_ids),
-                        Orders.creation_date > date_from, Orders.creation_date < date_to).all()
+                        Orders.creation_date > date_from, Orders.creation_date < date_to) \
+                .order_by(Orders.id).all()
 
             if not orders:
                 abort(404, message="Positions {} doesn't exist".format(id))
-            marshlled_orders = marshal(orders, output_fields)
 
-            titles = ["Дата", "Номер заявки", "Клиент", "Регион/Область", "Город/а.е.", "Адрес", "Сумма"]
+            titles = ["Дата", "Номер заявки", "Клиент", "Регион/Область", "Город/а.е.", "Адрес", "Менеджер", "Сумма"]
+            marshalled_orders = marshal(orders, output_fields)
 
             styles_dict = {
                 'title': ['ota_title', 'ota_text'],
                 'subtitle': ['ota_subtitle', 'ota_subtitle'],
                 'header': ['ota_header', 'ota_header', 'ota_header', 'ota_header', 'ota_header',
-                           'ota_header', 'ota_header'],
+                           'ota_header', 'ota_header', 'ota_header'],
                 'data_row': ['ota_text', 'ota_text', 'ota_text', 'ota_text', 'ota_text',
-                             'ota_text', 'ota_num'],
+                             'ota_text', 'ota_text', 'ota_num'],
                 'total_row': ['ota_text', 'ota_text', 'ota_text', 'ota_text', 'ota_text',
-                              'ota_header', 'ota_header']
+                              'ota_text', 'ota_header', 'ota_header']
             }
 
             documents = {}
             dtnow = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
-            converted_data_rows = [[['Выгрузка заказов', dtnow],
-                                    ['Период', '{}/{}'.format(date_from,date_to)]]]
+            converted_data_rows = [
+                [['Выгрузка заказов', dtnow]],
+                [['Период', '{}/{}'.format(date_from, date_to)]]
+            ]
             names = [styles_dict['title']]
             names.append(styles_dict['subtitle'])
             names.append(styles_dict['header'])
             converted_data_rows.append([titles])
             total_sum = 0
-            for order in marshlled_orders:
-                order['creation_date'] = datetime.datetime.strptime(order['creation_date'], '%a, %d %b %Y %H:%M:%S %z').strftime('%Y-%m-%d')
+            for order in marshalled_orders:
+                order['creation_date'] = datetime.datetime.strptime(order['creation_date'],
+                                                                    '%a, %d %b %Y %H:%M:%S %z').strftime('%Y-%m-%d')
                 names.append(styles_dict['data_row'])
                 converted_data_rows.append([self.get_row(order)])
                 total_sum += order['total_amount']
-            currency_display_value = marshlled_orders[0]['currency_display_value'] if len(marshlled_orders) > 0 else ''
+            currency_display_value = marshalled_orders[0]['currency_display_value'] if len(
+                marshalled_orders) > 0 else ''
             names.append(styles_dict['total_row'])
             converted_data_rows.append(
-                [['', '', '', '', '', 'Итого', '{} {}'.format(total_sum, currency_display_value)]])
+                [['', '', '', '', '', '', 'Итого', '{} {}'.format(total_sum, currency_display_value)]])
 
             documents['1'] = {
                 'name': 'Выгрузка данных',
@@ -130,7 +139,7 @@ class ExportOrdersByDateResource(Resource):
                 'styles': names
             }
 
-            export_folder, export_path = documents_exporter.export_order_positions(documents)
+            export_folder, export_path = documents_exporter.export_order_positions(documents, 5)
             return send_from_directory(export_folder, export_path, as_attachment=True)
 
         except Exception as e:

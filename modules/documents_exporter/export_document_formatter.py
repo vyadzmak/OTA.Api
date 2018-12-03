@@ -12,10 +12,10 @@ def get_width_with_new_line(value):
         pass
 
 
-def get_column_widths(data):
+def get_column_widths(data, rows_len):
     try:
         width_arr = []
-        rows_range = len(data) if len(data) < 10 else 10
+        rows_range = len(data) if len(data) < rows_len else rows_len
         for row_number in range(rows_range):
             widths = []
             rows = data[row_number]

@@ -281,7 +281,7 @@ class ExportOrdersResource(Resource):
                     'styles': names
                 }
 
-            export_folder, export_path = documents_exporter.export_order_positions(documents)
+            export_folder, export_path = documents_exporter.export_order_positions(documents, 10)
             return send_from_directory(export_folder, export_path, as_attachment=True)
 
 
