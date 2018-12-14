@@ -26,9 +26,6 @@ output_fields = {
         attribute=lambda x: x.client_address_data.address
         if x.client_address_data
            and x.client_address_data.address else '-'),
-    'client_address_name': fields.String(
-        attribute=lambda x: x.client_address_data.name
-        if x.client_address_data else '-'),
     'client_address_code': fields.String(
         attribute=lambda x: x.client_address_data.code
         if x.client_address_data else '-'),
@@ -61,7 +58,7 @@ class ExportOrdersByDateResource(Resource):
             ['client_name'],
             ['client_area_name'],
             ['client_city_name'],
-            ['client_address_name'],
+            ['client_address'],
             ['client_address_code'],
             ['total_amount', 'currency_display_value']
         ]

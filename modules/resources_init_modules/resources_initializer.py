@@ -54,6 +54,7 @@ from cross_res.client_info_by_client_resources import *
 from cross_res.client_addresses_by_client_resources import *
 from cross_res.events_by_user import *
 from cross_res.export_orders_resources import *
+from cross_res.export_shipping_docs_resources import *
 from cross_res.export_orders_by_date_resources import *
 from cross_res.products_categories_by_product_category_resources import *
 from cross_res.products_by_product_category_resources import *
@@ -81,7 +82,7 @@ from cross_res.user_confirmation_code_check_resource import *
 from cross_res.user_cart_details_resources import *
 from cross_res.add_cart_position_to_cart_resources import *
 from cross_res.manage_user_cart_details_resources import *
-from  cross_res.make_user_order_resources import *
+from cross_res.make_user_order_resources import *
 from cross_res.manage_favorite_products import *
 from cross_res.messages_by_message_content_resources import *
 from cross_res.messages_by_user_resources import *
@@ -205,6 +206,7 @@ api_resources_cross = [
     ClientAddressesByClientResource,
     EventsByUserResource,
     ExportOrdersResource,
+    ExportShippingDocsResource,
     ExportOrdersByDateResource,
     ProductsCategoriesByProductCategoryResource,
     ProductsByProductCategoryResource,
