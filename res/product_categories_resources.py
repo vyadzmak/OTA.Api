@@ -97,6 +97,14 @@ class ProductCategoriesResource(Resource):
             entity = session.query(MODEL).filter(MODEL.id == id).first()
             if not entity:
                 abort(404, message=ENTITY_NAME + " {} doesn't exist".format(id))
+            # if we delete category we should delete it from positioning in catalog
+            position = session.query(ProductCategoryPositions) \
+                .filter(ProductCategoryPositions.parent_category_id == entity.parent_category_id).first()
+            if position is not None:
+                position.child_category_positions = [e for e in position.child_category_positions if e != entity.id]
+                session.add(position)
+                session.commit()
+
             entity.is_delete = True
             session.add(entity)
             session.commit()
@@ -116,7 +124,9 @@ class ProductCategoriesResource(Resource):
             if not entity:
                 abort(404, message=ENTITY_NAME + " {} doesn't exist".format(id))
             # check if this category has another parent_id, so we should delete it from positions
-            if json_data['parent_category_id'] != entity.parent_category_id:
+            if json_data['parent_category_id'] != entity.parent_category_id\
+                    or json_data.get('is_delete', False)\
+                    or json_data.get('is_lock', False):
                 position = session.query(ProductCategoryPositions) \
                     .filter(ProductCategoryPositions.parent_category_id == entity.parent_category_id).first()
                 if position is not None:
